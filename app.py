@@ -5,7 +5,6 @@ Stamp Application - Add digital stamps to DOCX files and convert to PDF
 import os
 import uuid
 import subprocess
-import shutil
 from flask import Flask, request, jsonify, send_file, render_template
 from PIL import Image
 import io
@@ -29,124 +28,138 @@ def index():
     return render_template('index.html', stamps=STAMPS)
 
 
-@app.route('/process', methods=['POST'])
-def process():
+@app.route('/stamp_image/<key>')
+def stamp_image(key):
+    if key not in STAMPS:
+        return '', 404
+    path = os.path.join(STAMPS_DIR, STAMPS[key]['file'])
+    return send_file(path, mimetype='image/png')
+
+
+@app.route('/convert', methods=['POST'])
+def convert():
+    """Convert DOCX to PDF and return it for preview."""
     if 'docx' not in request.files:
         return jsonify({'error': 'Файл не загружен'}), 400
 
     docx_file = request.files['docx']
-    stamp_key = request.form.get('stamp')
-    position = request.form.get('position', 'bottom-left')  # bottom-left, bottom-right, bottom-center
-
-    if not stamp_key or stamp_key not in STAMPS:
-        return jsonify({'error': 'Печать не выбрана'}), 400
-
     if not docx_file.filename.endswith('.docx'):
         return jsonify({'error': 'Нужен файл формата .docx'}), 400
 
-    # Create working directory
     job_id = str(uuid.uuid4())
     job_dir = os.path.join(UPLOAD_DIR, job_id)
     os.makedirs(job_dir)
 
+    docx_path = os.path.join(job_dir, 'input.docx')
+    docx_file.save(docx_path)
+
+    result = subprocess.run(
+        ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', job_dir, docx_path],
+        capture_output=True, text=True, timeout=60
+    )
+    if result.returncode != 0:
+        return jsonify({'error': f'Ошибка конвертации: {result.stderr}'}), 500
+
+    pdf_path = os.path.join(job_dir, 'input.pdf')
+    if not os.path.exists(pdf_path):
+        return jsonify({'error': 'PDF не создан'}), 500
+
+    # Return job_id so we can reference it later
+    return jsonify({'job_id': job_id})
+
+
+@app.route('/preview_pdf/<job_id>')
+def preview_pdf(job_id):
+    # Security: only alphanumeric and dashes
+    if not all(c in '0123456789abcdef-' for c in job_id):
+        return '', 400
+    pdf_path = os.path.join(UPLOAD_DIR, job_id, 'input.pdf')
+    if not os.path.exists(pdf_path):
+        return '', 404
+    return send_file(pdf_path, mimetype='application/pdf')
+
+
+@app.route('/process', methods=['POST'])
+def process():
+    data = request.get_json()
+    job_id = data.get('job_id')
+    stamp_key = data.get('stamp')
+    # x, y in percent of page (0-100), from bottom-left
+    x_pct = float(data.get('x', 10))
+    y_pct = float(data.get('y', 5))
+    stamp_size_pct = float(data.get('size', 20))  # stamp width as % of page width
+    filename = data.get('filename', 'document')
+
+    if not job_id or not all(c in '0123456789abcdef-' for c in job_id):
+        return jsonify({'error': 'Неверный job_id'}), 400
+    if not stamp_key or stamp_key not in STAMPS:
+        return jsonify({'error': 'Печать не выбрана'}), 400
+
+    pdf_path = os.path.join(UPLOAD_DIR, job_id, 'input.pdf')
+    if not os.path.exists(pdf_path):
+        return jsonify({'error': 'PDF не найден'}), 404
+
+    stamp_path = os.path.join(STAMPS_DIR, STAMPS[stamp_key]['file'])
+    output_path = os.path.join(UPLOAD_DIR, job_id, 'output.pdf')
+
     try:
-        # Save uploaded docx
-        docx_path = os.path.join(job_dir, 'input.docx')
-        docx_file.save(docx_path)
-
-        # Convert docx -> pdf via LibreOffice
-        result = subprocess.run(
-            ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', job_dir, docx_path],
-            capture_output=True, text=True, timeout=60
-        )
-        if result.returncode != 0:
-            return jsonify({'error': f'Ошибка конвертации: {result.stderr}'}), 500
-
-        pdf_path = os.path.join(job_dir, 'input.pdf')
-        if not os.path.exists(pdf_path):
-            return jsonify({'error': 'PDF не создан'}), 500
-
-        # Add stamp to PDF using pypdf + reportlab
-        stamp_path = os.path.join(STAMPS_DIR, STAMPS[stamp_key]['file'])
-        output_path = os.path.join(job_dir, 'output.pdf')
-
-        add_stamp_to_pdf(pdf_path, stamp_path, output_path, position)
-
-        # Return the stamped PDF
-        original_name = os.path.splitext(docx_file.filename)[0]
-        download_name = f'{original_name}_с_печатью.pdf'
-
-        return send_file(
-            output_path,
-            as_attachment=True,
-            download_name=download_name,
-            mimetype='application/pdf'
-        )
-
+        add_stamp_to_pdf(pdf_path, stamp_path, output_path, x_pct, y_pct, stamp_size_pct)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    finally:
-        # Cleanup after a delay (let file be sent first)
-        pass
+
+    return jsonify({'download_url': f'/download/{job_id}/{filename}'})
 
 
-def add_stamp_to_pdf(pdf_path, stamp_path, output_path, position='bottom-left'):
-    """Add stamp image to last page of PDF."""
+@app.route('/download/<job_id>/<filename>')
+def download(job_id, filename):
+    if not all(c in '0123456789abcdef-' for c in job_id):
+        return '', 400
+    output_path = os.path.join(UPLOAD_DIR, job_id, 'output.pdf')
+    if not os.path.exists(output_path):
+        return '', 404
+    download_name = f'{filename}_с_печатью.pdf'
+    return send_file(output_path, as_attachment=True, download_name=download_name, mimetype='application/pdf')
+
+
+def add_stamp_to_pdf(pdf_path, stamp_path, output_path, x_pct, y_pct, stamp_size_pct):
+    """Add stamp image to last page of PDF at given percent position."""
     from pypdf import PdfReader, PdfWriter
     from reportlab.pdfgen import canvas
-    from reportlab.lib.pagesizes import A4
 
     reader = PdfReader(pdf_path)
     last_page = reader.pages[-1]
     page_width = float(last_page.mediabox.width)
     page_height = float(last_page.mediabox.height)
 
-    # Load stamp image to get aspect ratio
     stamp_img = Image.open(stamp_path).convert('RGBA')
     img_w, img_h = stamp_img.size
     aspect = img_w / img_h
 
-    # Stamp size: 5cm wide
-    stamp_width_pt = 150  # ~5.3 cm in points
+    stamp_width_pt = page_width * (stamp_size_pct / 100)
     stamp_height_pt = stamp_width_pt / aspect
 
-    margin = 40  # points from edge
+    # x_pct, y_pct are from top-left of page in preview
+    # PDF y=0 is bottom, so flip y
+    x = page_width * (x_pct / 100)
+    y = page_height - page_height * (y_pct / 100) - stamp_height_pt
 
-    # Position
-    if position == 'bottom-left':
-        x = margin
-        y = margin
-    elif position == 'bottom-right':
-        x = page_width - stamp_width_pt - margin
-        y = margin
-    else:  # bottom-center
-        x = (page_width - stamp_width_pt) / 2
-        y = margin
-
-    # Create stamp overlay PDF in memory
     stamp_pdf_buf = io.BytesIO()
     c = canvas.Canvas(stamp_pdf_buf, pagesize=(page_width, page_height))
 
-    # Save stamp as temp PNG for reportlab
-    tmp_stamp = '/tmp/stamp_overlay.png'
+    tmp_stamp = f'/tmp/stamp_{os.getpid()}.png'
     stamp_img.save(tmp_stamp, format='PNG')
-
     c.drawImage(tmp_stamp, x, y, width=stamp_width_pt, height=stamp_height_pt, mask='auto')
     c.save()
     stamp_pdf_buf.seek(0)
 
-    # Merge stamp onto last page
     from pypdf import PdfReader as PR
     stamp_reader = PR(stamp_pdf_buf)
     stamp_page = stamp_reader.pages[0]
 
     writer = PdfWriter()
-
-    # All pages except last — unchanged
     for i in range(len(reader.pages) - 1):
         writer.add_page(reader.pages[i])
 
-    # Last page: merge stamp
     last_page.merge_page(stamp_page)
     writer.add_page(last_page)
 
@@ -160,11 +173,3 @@ if __name__ == '__main__':
     print("Откройте браузер: http://localhost:5000")
     print("=" * 50)
     app.run(debug=False, port=5000, host='0.0.0.0')
-
-
-@app.route('/stamp_image/<key>')
-def stamp_image(key):
-    if key not in STAMPS:
-        return '', 404
-    path = os.path.join(STAMPS_DIR, STAMPS[key]['file'])
-    return send_file(path, mimetype='image/png')
