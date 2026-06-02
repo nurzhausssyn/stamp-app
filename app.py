@@ -17,9 +17,9 @@ UPLOAD_DIR = '/tmp/stamp_uploads'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 STAMPS = {
-    'kazybai': {'file': 'Казыбай_АН.png', 'label': 'ИП Казыбай А.Н.'},
-    'alfa': {'file': 'Alfa_and_Omega.png', 'label': 'Alfa and Omega'},
-    'tempstroy': {'file': 'Temp_Stroy.png', 'label': 'ИП Керимбеков Temp Stroy'},
+    'kazybai': {'file': 'Печать Казыбай А.Н..png', 'label': 'ИП Казыбай А.Н.'},
+    'alfa': {'file': 'Печать Alfa and Omega.png', 'label': 'Alfa and Omega'},
+    'tempstroy': {'file': 'Печать Temp Stroy.png', 'label': 'ИП Керимбеков Temp Stroy'},
 }
 
 
