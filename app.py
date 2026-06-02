@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-Stamp Application - Add digital stamps to DOCX files and convert to PDF
+Stamp Application v3 - Multi-page, multi-stamp, page deletion
 """
 import os
 import uuid
 import subprocess
+import json
 from flask import Flask, request, jsonify, send_file, render_template
 from PIL import Image
 import io
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
 STAMPS_DIR = os.path.join(os.path.dirname(__file__), 'stamps')
 UPLOAD_DIR = '/tmp/stamp_uploads'
@@ -38,13 +39,11 @@ def stamp_image(key):
 
 @app.route('/convert', methods=['POST'])
 def convert():
-    """Convert DOCX to PDF and return it for preview."""
     if 'docx' not in request.files:
         return jsonify({'error': 'Файл не загружен'}), 400
-
     docx_file = request.files['docx']
     if not docx_file.filename.endswith('.docx'):
-        return jsonify({'error': 'Нужен файл формата .docx'}), 400
+        return jsonify({'error': 'Нужен файл .docx'}), 400
 
     job_id = str(uuid.uuid4())
     job_dir = os.path.join(UPLOAD_DIR, job_id)
@@ -64,13 +63,16 @@ def convert():
     if not os.path.exists(pdf_path):
         return jsonify({'error': 'PDF не создан'}), 500
 
-    # Return job_id so we can reference it later
-    return jsonify({'job_id': job_id})
+    # Get page count
+    from pypdf import PdfReader
+    reader = PdfReader(pdf_path)
+    page_count = len(reader.pages)
+
+    return jsonify({'job_id': job_id, 'page_count': page_count})
 
 
 @app.route('/preview_pdf/<job_id>')
 def preview_pdf(job_id):
-    # Security: only alphanumeric and dashes
     if not all(c in '0123456789abcdef-' for c in job_id):
         return '', 400
     pdf_path = os.path.join(UPLOAD_DIR, job_id, 'input.pdf')
@@ -83,31 +85,88 @@ def preview_pdf(job_id):
 def process():
     data = request.get_json()
     job_id = data.get('job_id')
-    stamp_key = data.get('stamp')
-    # x, y in percent of page (0-100), from bottom-left
-    x_pct = float(data.get('x', 10))
-    y_pct = float(data.get('y', 5))
-    stamp_size_pct = float(data.get('size', 20))  # stamp width as % of page width
+    stamps = data.get('stamps', [])       # list of {page, stamp_key, x, y, size}
+    deleted_pages = data.get('deleted_pages', [])  # list of 1-based page numbers to remove
     filename = data.get('filename', 'document')
 
     if not job_id or not all(c in '0123456789abcdef-' for c in job_id):
         return jsonify({'error': 'Неверный job_id'}), 400
-    if not stamp_key or stamp_key not in STAMPS:
-        return jsonify({'error': 'Печать не выбрана'}), 400
 
     pdf_path = os.path.join(UPLOAD_DIR, job_id, 'input.pdf')
     if not os.path.exists(pdf_path):
         return jsonify({'error': 'PDF не найден'}), 404
 
-    stamp_path = os.path.join(STAMPS_DIR, STAMPS[stamp_key]['file'])
     output_path = os.path.join(UPLOAD_DIR, job_id, 'output.pdf')
 
     try:
-        add_stamp_to_pdf(pdf_path, stamp_path, output_path, x_pct, y_pct, stamp_size_pct)
+        build_output_pdf(pdf_path, output_path, stamps, deleted_pages)
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc()}), 500
 
     return jsonify({'download_url': f'/download/{job_id}/{filename}'})
+
+
+def build_output_pdf(pdf_path, output_path, stamps_data, deleted_pages):
+    from pypdf import PdfReader, PdfWriter
+    from reportlab.pdfgen import canvas as rl_canvas
+
+    reader = PdfReader(pdf_path)
+    total = len(reader.pages)
+    deleted_set = set(deleted_pages)  # 1-based
+
+    writer = PdfWriter()
+
+    for page_num in range(1, total + 1):
+        if page_num in deleted_set:
+            continue
+
+        page = reader.pages[page_num - 1]
+        page_width = float(page.mediabox.width)
+        page_height = float(page.mediabox.height)
+
+        # Find stamps for this page
+        page_stamps = [s for s in stamps_data if s.get('page') == page_num]
+
+        if page_stamps:
+            # Build overlay PDF with all stamps for this page
+            buf = io.BytesIO()
+            c = rl_canvas.Canvas(buf, pagesize=(page_width, page_height))
+
+            for s in page_stamps:
+                stamp_key = s.get('stamp')
+                if stamp_key not in STAMPS:
+                    continue
+                stamp_path = os.path.join(STAMPS_DIR, STAMPS[stamp_key]['file'])
+                stamp_img = Image.open(stamp_path).convert('RGBA')
+                iw, ih = stamp_img.size
+                aspect = iw / ih
+
+                stamp_w = page_width * (s.get('size', 20) / 100)
+                stamp_h = stamp_w / aspect
+
+                x_pct = s.get('x', 0)
+                y_pct = s.get('y', 0)
+                x = page_width * (x_pct / 100)
+                # y_pct from top-left; PDF y=0 is bottom
+                y = page_height - page_height * (y_pct / 100) - stamp_h
+
+                tmp = f'/tmp/stamp_{os.getpid()}_{stamp_key}.png'
+                stamp_img.save(tmp, format='PNG')
+                c.drawImage(tmp, x, y, width=stamp_w, height=stamp_h, mask='auto')
+
+            c.save()
+            buf.seek(0)
+
+            from pypdf import PdfReader as PR
+            overlay_reader = PR(buf)
+            overlay_page = overlay_reader.pages[0]
+            page.merge_page(overlay_page)
+
+        writer.add_page(page)
+
+    with open(output_path, 'wb') as f:
+        writer.write(f)
 
 
 @app.route('/download/<job_id>/<filename>')
@@ -117,59 +176,11 @@ def download(job_id, filename):
     output_path = os.path.join(UPLOAD_DIR, job_id, 'output.pdf')
     if not os.path.exists(output_path):
         return '', 404
-    download_name = f'{filename}_с_печатью.pdf'
-    return send_file(output_path, as_attachment=True, download_name=download_name, mimetype='application/pdf')
-
-
-def add_stamp_to_pdf(pdf_path, stamp_path, output_path, x_pct, y_pct, stamp_size_pct):
-    """Add stamp image to last page of PDF at given percent position."""
-    from pypdf import PdfReader, PdfWriter
-    from reportlab.pdfgen import canvas
-
-    reader = PdfReader(pdf_path)
-    last_page = reader.pages[-1]
-    page_width = float(last_page.mediabox.width)
-    page_height = float(last_page.mediabox.height)
-
-    stamp_img = Image.open(stamp_path).convert('RGBA')
-    img_w, img_h = stamp_img.size
-    aspect = img_w / img_h
-
-    stamp_width_pt = page_width * (stamp_size_pct / 100)
-    stamp_height_pt = stamp_width_pt / aspect
-
-    # x_pct, y_pct are from top-left of page in preview
-    # PDF y=0 is bottom, so flip y
-    x = page_width * (x_pct / 100)
-    y = page_height - page_height * (y_pct / 100) - stamp_height_pt
-
-    stamp_pdf_buf = io.BytesIO()
-    c = canvas.Canvas(stamp_pdf_buf, pagesize=(page_width, page_height))
-
-    tmp_stamp = f'/tmp/stamp_{os.getpid()}.png'
-    stamp_img.save(tmp_stamp, format='PNG')
-    c.drawImage(tmp_stamp, x, y, width=stamp_width_pt, height=stamp_height_pt, mask='auto')
-    c.save()
-    stamp_pdf_buf.seek(0)
-
-    from pypdf import PdfReader as PR
-    stamp_reader = PR(stamp_pdf_buf)
-    stamp_page = stamp_reader.pages[0]
-
-    writer = PdfWriter()
-    for i in range(len(reader.pages) - 1):
-        writer.add_page(reader.pages[i])
-
-    last_page.merge_page(stamp_page)
-    writer.add_page(last_page)
-
-    with open(output_path, 'wb') as f:
-        writer.write(f)
+    return send_file(output_path, as_attachment=True,
+                     download_name=f'{filename}_с_печатью.pdf',
+                     mimetype='application/pdf')
 
 
 if __name__ == '__main__':
-    print("=" * 50)
-    print("Stamp Application запущена!")
-    print("Откройте браузер: http://localhost:5000")
-    print("=" * 50)
+    print("Stamp App v3 → http://localhost:5000")
     app.run(debug=False, port=5000, host='0.0.0.0')
