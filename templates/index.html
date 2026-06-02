@@ -3,256 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Штамп на документ</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>Штамп</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --blue: #4361ee;
-  --blue-light: #eef0ff;
-  --green: #2ec4b6;
-  --red: #e63946;
-  --bg: #f0f2f9;
-  --card: #ffffff;
-  --text: #1a1a2e;
-  --muted: #9098b1;
-  --radius: 14px;
-  --panel-h: 52px; /* collapsed mobile panel height */
+  --bg:      #111111;
+  --surface: #1c1c1c;
+  --card:    #232323;
+  --card2:   #2a2a2a;
+  --lime:    #cef139;
+  --lime-dim:#a8c82e;
+  --text:    #f0f0f0;
+  --muted:   #6a6a6a;
+  --muted2:  #444444;
+  --danger:  #ff4d4d;
+  --r:       14px;
+  --r-sm:    9px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; }
-body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: 'DM Sans', sans-serif; color: var(--text); }
 
-/* ═══════════════════════════════════════
-   DESKTOP: side-by-side layout
-═══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════ */
 .app { display: flex; height: 100vh; }
 
+/* ── SIDEBAR ─────────────────────────── */
 .panel {
-  width: 290px; flex-shrink: 0;
-  background: var(--card);
-  box-shadow: 2px 0 20px rgba(67,97,238,0.08);
+  width: 300px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid #2a2a2a;
   display: flex; flex-direction: column;
-  overflow-y: auto; padding: 20px 16px; gap: 14px;
-  z-index: 10;
+  overflow-y: auto; padding: 24px 18px; gap: 20px;
+  scrollbar-width: thin; scrollbar-color: var(--muted2) transparent;
 }
+.panel::-webkit-scrollbar { width: 4px; }
+.panel::-webkit-scrollbar-thumb { background: var(--muted2); border-radius: 4px; }
 
-.brand { display: flex; align-items: center; gap: 8px; }
-.brand-icon { width: 36px; height: 36px; background: var(--blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.brand-text h1 { font-size: 15px; font-weight: 800; color: var(--text); }
-.brand-text p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.wordmark { font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 0.5px; }
+.wordmark span { color: var(--lime); }
 
-.lbl { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.section-title {
+  font-size: 10px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px;
+}
 
 /* Drop zone */
 .drop-zone {
-  border: 2px dashed #d5d9ee; border-radius: var(--radius); padding: 16px 12px;
-  text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: #fafbff;
+  border: 1.5px dashed var(--muted2); border-radius: var(--r);
+  padding: 20px 14px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; position: relative;
+  background: var(--card);
 }
-.drop-zone.dragover, .drop-zone:hover { border-color: var(--blue); background: var(--blue-light); }
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--lime); background: #1e2310; }
 .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.drop-icon { font-size: 26px; }
-.drop-text { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
-.drop-text b { color: var(--blue); }
-.fname { margin-top: 7px; font-size: 11px; color: var(--green); font-weight: 700; display: none; word-break: break-all; }
+.drop-icon {
+  width: 36px; height: 36px; background: var(--card2); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
+}
+.drop-icon svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 1.8; }
+.drop-text { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.drop-text b { color: var(--lime); font-weight: 600; }
+.fname { margin-top: 8px; font-size: 11px; color: var(--lime); font-weight: 600; display: none; word-break: break-all; font-family: 'DM Mono', monospace; }
 
-/* Stamps */
+/* Stamp grid */
 .stamps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .stamp-opt input { display: none; }
 .stamp-card {
-  border: 2px solid #e8ecf5; border-radius: 10px; padding: 6px 4px;
-  text-align: center; cursor: pointer; transition: all 0.18s; background: #fafbff;
+  border: 1.5px solid var(--muted2); border-radius: var(--r-sm);
+  padding: 8px 5px; text-align: center; cursor: pointer;
+  transition: border-color 0.18s, background 0.18s; background: var(--card);
 }
-.stamp-card:hover { border-color: #b0bcff; }
-.stamp-opt input:checked + .stamp-card { border-color: var(--blue); background: var(--blue-light); box-shadow: 0 0 0 3px rgba(67,97,238,0.12); }
-.stamp-card img { width: 100%; height: 38px; object-fit: contain; background: #f4f5f8; border-radius: 5px; }
-.stamp-card .nm { font-size: 9px; color: var(--muted); margin-top: 3px; font-weight: 700; line-height: 1.2; }
+.stamp-card:hover { border-color: #555; background: var(--card2); }
+.stamp-opt input:checked + .stamp-card {
+  border-color: var(--lime); background: #1e2310;
+}
+.stamp-card img { width: 100%; height: 38px; object-fit: contain; border-radius: 5px; background: #2e2e2e; }
+.stamp-card .nm { font-size: 9px; color: var(--muted); margin-top: 5px; font-weight: 600; line-height: 1.3; }
 
 /* Slider */
-.slider-row { display: flex; align-items: center; gap: 8px; }
+.slider-row { display: flex; align-items: center; gap: 10px; }
 .slider-row input[type=range] {
-  flex: 1; -webkit-appearance: none; height: 4px;
-  background: linear-gradient(to right, var(--blue) 0%, var(--blue) var(--pct, 40%), #dde2f0 var(--pct, 40%));
-  border-radius: 4px; outline: none;
+  flex: 1; -webkit-appearance: none; height: 3px;
+  background: linear-gradient(to right, var(--lime) var(--pct,40%), var(--muted2) var(--pct,40%));
+  border-radius: 3px; outline: none; cursor: pointer;
 }
 .slider-row input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 18px; height: 18px;
-  background: var(--blue); border-radius: 50%; cursor: pointer;
-  box-shadow: 0 2px 6px rgba(67,97,238,0.35);
+  -webkit-appearance: none; width: 16px; height: 16px;
+  background: var(--lime); border-radius: 50%; cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(206,241,57,0.15);
 }
-.sval { font-size: 12px; color: var(--blue); font-weight: 800; min-width: 32px; text-align: right; }
+.sval { font-size: 12px; color: var(--lime); font-weight: 600; min-width: 34px; text-align: right; font-family: 'DM Mono', monospace; }
 
 /* Stamp list */
-.stamp-list { display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto; }
+.stamp-list { display: flex; flex-direction: column; gap: 4px; max-height: 130px; overflow-y: auto; }
 .stamp-item {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--blue-light); border-radius: 8px; padding: 5px 8px; font-size: 11px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border-radius: var(--r-sm);
+  padding: 7px 10px; font-size: 11px; cursor: pointer;
+  border: 1px solid transparent; transition: border-color 0.15s;
 }
-.stamp-item:hover { background: #e2e6ff; }
-.stamp-item .pg { background: var(--blue); color: white; border-radius: 5px; padding: 1px 5px; font-size: 10px; font-weight: 800; flex-shrink: 0; }
-.stamp-item .del-s { margin-left: auto; color: var(--red); font-size: 15px; cursor: pointer; padding: 0 2px; }
-.empty-list { font-size: 11px; color: #c5c9d8; text-align: center; padding: 8px; }
+.stamp-item:hover { border-color: var(--muted2); }
+.stamp-item .pg {
+  background: var(--lime); color: #111; border-radius: 5px;
+  padding: 2px 6px; font-size: 10px; font-weight: 700; flex-shrink: 0; font-family: 'DM Mono', monospace;
+}
+.stamp-item .nm { flex: 1; color: var(--muted); font-size: 11px; }
+.stamp-item .del-s { color: var(--muted2); font-size: 14px; cursor: pointer; transition: color 0.15s; padding: 0 2px; }
+.stamp-item .del-s:hover { color: var(--danger); }
+.empty-list { font-size: 11px; color: var(--muted2); text-align: center; padding: 10px; }
 
 /* Buttons */
 .btn {
-  padding: 12px; background: var(--blue); color: white; border: none;
-  border-radius: var(--radius); font-size: 14px; font-weight: 800; cursor: pointer; width: 100%;
-  font-family: inherit; transition: all 0.18s; letter-spacing: 0.2px;
+  padding: 12px 16px; border: none; border-radius: var(--r);
+  font-size: 13px; font-weight: 600; cursor: pointer; width: 100%;
+  font-family: inherit; transition: all 0.18s; letter-spacing: 0.1px;
 }
-.btn:hover { background: #3451d1; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(67,97,238,0.3); }
-.btn:disabled { background: #c5c9d8; cursor: not-allowed; transform: none; box-shadow: none; }
-.btn-outline {
-  padding: 10px; background: transparent; color: var(--blue); border: 2px solid var(--blue);
-  border-radius: var(--radius); font-size: 13px; font-weight: 700; cursor: pointer; width: 100%;
-  font-family: inherit; transition: all 0.18s;
-}
-.btn-outline:hover { background: var(--blue-light); }
-.btn-green {
-  padding: 10px; background: #edfdf9; color: #0d9488; border: 2px solid #99f6e4;
-  border-radius: var(--radius); font-size: 13px; font-weight: 700; cursor: pointer; width: 100%;
-  font-family: inherit; transition: all 0.18s;
-}
-.btn-green:hover { background: #ccfbf1; }
-.btn-green:disabled { background: #f0f0f4; color: #c5c9d8; border-color: #e8e8ef; cursor: not-allowed; }
+.btn-primary { background: var(--lime); color: #111; }
+.btn-primary:hover { background: #d8f84a; box-shadow: 0 4px 20px rgba(206,241,57,0.2); }
+.btn-primary:disabled { background: var(--muted2); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+.btn-ghost { background: var(--card); color: var(--muted); border: 1px solid var(--muted2); }
+.btn-ghost:hover { border-color: #555; color: var(--text); background: var(--card2); }
+.btn-add { background: #1a2410; color: var(--lime); border: 1px solid #2d3d18; }
+.btn-add:hover { background: #1e2d12; border-color: var(--lime-dim); }
+.btn-add:disabled { background: var(--card); color: var(--muted2); border-color: var(--muted2); cursor: not-allowed; }
 
 /* Status */
-.status { font-size: 12px; padding: 9px 12px; border-radius: 10px; display: none; font-weight: 600; }
-.status.error { display: block; background: #fff0f0; color: var(--red); }
-.status.success { display: flex; align-items: center; gap: 6px; background: #edfdf9; color: #0d9488; }
-.status.loading { display: flex; align-items: center; gap: 6px; background: var(--blue-light); color: var(--blue); }
-.spinner { width: 14px; height: 14px; border: 2px solid #c0c8f8; border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+.status { font-size: 12px; padding: 10px 12px; border-radius: var(--r-sm); display: none; font-weight: 500; }
+.status.error { display: block; background: #2a1212; color: var(--danger); border: 1px solid #3d1a1a; }
+.status.success { display: flex; align-items: center; gap: 6px; background: #1a2410; color: var(--lime); border: 1px solid #2d3d18; }
+.status.loading { display: flex; align-items: center; gap: 6px; background: var(--card); color: var(--muted); border: 1px solid var(--muted2); }
+.spinner { width: 13px; height: 13px; border: 2px solid var(--muted2); border-top-color: var(--lime); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ═══════════════════════════════════════
-   PREVIEW AREA
-═══════════════════════════════════════ */
+/* Divider */
+.divider { height: 1px; background: var(--muted2); opacity: 0.4; }
+
+/* ══════════════════════════════════════
+   PREVIEW
+══════════════════════════════════════ */
 .preview-area {
   flex: 1; display: flex; flex-direction: column;
-  align-items: center; background: var(--bg); overflow: hidden; position: relative;
+  background: var(--bg); overflow: hidden;
 }
 
-/* Top nav bar */
 .page-bar {
-  width: 100%; background: #1e2340; display: none;
-  align-items: center; justify-content: center; flex-shrink: 0; z-index: 5;
+  display: none; align-items: center; background: var(--surface);
+  border-bottom: 1px solid #2a2a2a; padding: 10px 20px; gap: 12px; flex-shrink: 0;
 }
-.page-bar-inner { display: flex; align-items: center; gap: 10px; padding: 8px 16px; width: 100%; max-width: 700px; }
 .nav-btn {
-  background: rgba(255,255,255,0.12); border: none; color: white;
-  width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: inherit;
-  transition: background 0.15s;
+  background: var(--card); border: 1px solid var(--muted2); color: var(--text);
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  font-family: inherit;
 }
-.nav-btn:hover { background: rgba(255,255,255,0.22); }
+.nav-btn:hover { border-color: #555; background: var(--card2); }
 .nav-btn:disabled { opacity: 0.3; cursor: default; }
-.page-info { color: white; font-size: 13px; font-weight: 700; flex: 1; text-align: center; }
+.page-info { color: var(--muted); font-size: 12px; font-weight: 600; flex: 1; text-align: center; font-family: 'DM Mono', monospace; }
 .del-page-btn {
-  background: var(--red); border: none; color: white; padding: 6px 12px;
-  border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; font-family: inherit;
-  white-space: nowrap; transition: background 0.15s;
+  background: #2a1212; color: var(--danger); border: 1px solid #3d1a1a;
+  padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s;
 }
-.del-page-btn:hover { background: #c1121f; }
+.del-page-btn:hover { background: #3d1a1a; }
 .restore-btn {
-  background: var(--green); border: none; color: white; padding: 6px 12px;
-  border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; font-family: inherit;
-  white-space: nowrap;
+  background: #1a2410; color: var(--lime); border: 1px solid #2d3d18;
+  padding: 7px 14px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s;
 }
 
 .preview-scroll {
   flex: 1; display: flex; align-items: flex-start; justify-content: center;
-  padding: 20px; overflow: auto; width: 100%;
+  padding: 28px; overflow: auto; width: 100%;
 }
 
-.placeholder { text-align: center; color: #b8bdd4; margin: auto; }
-.placeholder .ico { font-size: 52px; margin-bottom: 12px; }
-.placeholder p { font-size: 14px; font-weight: 600; line-height: 1.6; }
+.placeholder { text-align: center; color: var(--muted2); margin: auto; }
+.placeholder .ico {
+  width: 64px; height: 64px; background: var(--card); border-radius: 18px;
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+  border: 1px solid var(--muted2);
+}
+.placeholder .ico svg { width: 28px; height: 28px; stroke: var(--muted); fill: none; stroke-width: 1.5; }
+.placeholder p { font-size: 14px; color: var(--muted); line-height: 1.6; font-weight: 400; }
 
 .preview-wrapper {
-  position: relative; display: none;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.18); flex-shrink: 0;
+  position: relative; display: none; flex-shrink: 0;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  border-radius: 2px;
 }
 .deleted-overlay {
-  position: absolute; inset: 0; background: rgba(230,57,70,0.15);
+  position: absolute; inset: 0; background: rgba(255,77,77,0.08);
   display: none; align-items: center; justify-content: center;
   pointer-events: none; z-index: 5;
 }
 .deleted-overlay .del-label {
-  background: var(--red); color: white; font-size: 20px; font-weight: 800;
-  padding: 8px 20px; border-radius: 10px; letter-spacing: 2px;
-  transform: rotate(-12deg); font-family: inherit;
+  background: var(--danger); color: white; font-size: 16px; font-weight: 700;
+  padding: 8px 20px; border-radius: 8px; letter-spacing: 3px;
+  transform: rotate(-12deg); font-family: 'DM Mono', monospace;
 }
-#pdfCanvas { display: block; }
+#pdfCanvas { display: block; border-radius: 2px; }
 
 .stamp-el {
   position: absolute; cursor: grab; user-select: none;
-  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.25)); touch-action: none;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5)); touch-action: none;
 }
 .stamp-el:active { cursor: grabbing; }
 .stamp-el img { width: 100%; height: 100%; pointer-events: none; display: block; }
 .stamp-el .remove-stamp {
-  position: absolute; top: -10px; right: -10px; background: var(--red);
-  color: white; border: 2px solid white; border-radius: 50%; width: 22px; height: 22px;
-  font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-family: inherit; flex-shrink: 0;
+  position: absolute; top: -9px; right: -9px;
+  background: var(--danger); color: white; border: 2px solid var(--bg);
+  border-radius: 50%; width: 20px; height: 20px; font-size: 10px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4); font-family: inherit;
 }
 
-/* ═══════════════════════════════════════
-   MOBILE LAYOUT  (≤ 680px)
-═══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   MOBILE  ≤ 680px
+══════════════════════════════════════ */
 @media (max-width: 680px) {
   .app { flex-direction: column; }
+  .preview-area { flex: 1; min-height: 0; }
+  .preview-scroll { padding: 12px; }
 
-  /* Preview takes top portion */
-  .preview-area {
-    flex: 1; min-height: 0;
-  }
-
-  .preview-scroll { padding: 10px; align-items: center; }
-
-  /* Bottom sheet panel */
   .panel {
-    width: 100%; flex-shrink: 0;
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -4px 24px rgba(67,97,238,0.13);
+    width: 100%; flex-shrink: 0; border-right: none;
+    border-top: 1px solid var(--muted2);
     padding: 0; gap: 0; overflow: visible;
-    /* collapsed height = handle + quick actions */
-    height: auto; max-height: 70vh;
-    display: flex; flex-direction: column;
-    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    max-height: 56px;
+    transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1);
+    border-radius: 20px 20px 0 0;
   }
 
-  /* Drag handle */
   .sheet-handle {
     display: flex; flex-direction: column; align-items: center;
     padding: 10px 16px 0; cursor: pointer; flex-shrink: 0;
   }
-  .sheet-handle .pill {
-    width: 38px; height: 4px; background: #d5d9ee; border-radius: 4px; margin-bottom: 10px;
-  }
+  .pill { width: 32px; height: 3px; background: var(--muted2); border-radius: 3px; margin-bottom: 10px; }
 
-  /* Quick bar always visible */
   .quick-bar {
     display: flex; align-items: center; gap: 8px;
-    padding: 0 14px 10px; flex-shrink: 0;
+    padding: 0 14px 12px; flex-shrink: 0;
   }
-  .quick-bar .btn { font-size: 13px; padding: 10px; }
+  .quick-title { flex: 1; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .quick-btn {
+    background: var(--card); border: 1px solid var(--muted2); color: var(--muted);
+    padding: 8px 12px; border-radius: 9px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s;
+  }
+  .quick-btn.accent { background: var(--lime); color: #111; border-color: var(--lime); }
+  .quick-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  /* Scrollable content inside sheet */
   .sheet-content {
-    overflow-y: auto; padding: 4px 14px 20px;
-    display: flex; flex-direction: column; gap: 12px;
+    overflow-y: auto; padding: 4px 16px 24px;
+    display: flex; flex-direction: column; gap: 14px;
     flex: 1; min-height: 0;
   }
-
-  /* Desktop-only elements hidden on mobile */
   .desktop-only { display: none !important; }
-
-  /* Page bar smaller on mobile */
-  .page-bar-inner { padding: 6px 10px; gap: 6px; }
-  .page-info { font-size: 12px; }
-  .del-page-btn, .restore-btn { font-size: 10px; padding: 5px 8px; }
 }
-
-/* Desktop: hide mobile-only elements */
 @media (min-width: 681px) {
   .mobile-only { display: none !important; }
   .sheet-handle { display: none; }
@@ -264,21 +272,22 @@ body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--te
 <body>
 <div class="app">
 
-<!-- ═══ PREVIEW (top on mobile, right on desktop) ═══ -->
+<!-- ══ PREVIEW ══ -->
 <div class="preview-area">
   <div class="page-bar" id="pageBar">
-    <div class="page-bar-inner">
-      <button class="nav-btn" id="prevBtn" onclick="goPage(-1)">‹</button>
-      <div class="page-info" id="pageInfo">Стр 1 / 1</div>
-      <button class="nav-btn" id="nextBtn" onclick="goPage(1)">›</button>
-      <button class="del-page-btn" id="delPageBtn" onclick="toggleDeletePage()">🗑 Удалить</button>
-    </div>
+    <button class="nav-btn" id="prevBtn" onclick="goPage(-1)">‹</button>
+    <div class="page-info" id="pageInfo">1 / 1</div>
+    <button class="nav-btn" id="nextBtn" onclick="goPage(1)">›</button>
+    <div style="flex:1"></div>
+    <button class="del-page-btn" id="delPageBtn" onclick="toggleDeletePage()">Удалить страницу</button>
   </div>
 
   <div class="preview-scroll" id="previewScroll">
     <div class="placeholder" id="placeholder">
-      <div class="ico">📋</div>
-      <p>Загрузите документ —<br>увидите превью здесь</p>
+      <div class="ico">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <p>Загрузите документ —<br>превью появится здесь</p>
     </div>
     <div class="preview-wrapper" id="previewWrapper">
       <canvas id="pdfCanvas"></canvas>
@@ -289,49 +298,44 @@ body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--te
   </div>
 </div>
 
-<!-- ═══ PANEL ═══ -->
+<!-- ══ PANEL ══ -->
 <div class="panel" id="panel">
 
-  <!-- Mobile: drag handle -->
+  <!-- Mobile handle -->
   <div class="sheet-handle" onclick="toggleSheet()">
     <div class="pill"></div>
-    <!-- Quick actions always visible on mobile -->
-    <div class="quick-bar" style="width:100%;padding:0 0 10px">
-      <div style="flex:1;font-size:13px;font-weight:800;color:var(--text)" id="mobileTitle">📄 Загрузите файл</div>
-      <button class="btn" style="width:auto;padding:9px 14px;font-size:12px" onclick="event.stopPropagation();document.getElementById('fileInput').click()">📁 Файл</button>
-      <button class="btn" style="width:auto;padding:9px 14px;font-size:12px;background:#edfdf9;color:#0d9488;border:2px solid #99f6e4" id="mobileAddBtn" onclick="event.stopPropagation();addStampToPage()" disabled>➕</button>
-      <button class="btn" style="width:auto;padding:9px 14px;font-size:12px" id="mobileApplyBtn" onclick="event.stopPropagation();applyAll()" disabled>📥</button>
+    <div class="quick-bar" style="width:100%;padding:0 0 0">
+      <div class="quick-title" id="mobileTitle">Загрузите файл</div>
+      <button class="quick-btn" onclick="event.stopPropagation();document.getElementById('fileInputMobile').click()">Файл</button>
+      <button class="quick-btn" id="mobileAddBtn" onclick="event.stopPropagation();addStampToPage()" disabled>+ Печать</button>
+      <button class="quick-btn accent" id="mobileApplyBtn" onclick="event.stopPropagation();applyAll()" disabled>Скачать</button>
     </div>
   </div>
+  <input type="file" id="fileInputMobile" accept=".docx" class="mobile-only" style="display:none">
 
-  <!-- Scrollable sheet content -->
+  <!-- Sheet content -->
   <div class="sheet-content">
 
-    <!-- Brand (desktop only) -->
-    <div class="brand desktop-only">
-      <div class="brand-icon">🖊️</div>
-      <div class="brand-text">
-        <h1>Штамп на документ</h1>
-        <p>Печати · Листалка · Удаление страниц</p>
-      </div>
-    </div>
+    <div class="wordmark desktop-only">Stamp<span>.</span></div>
 
-    <!-- File upload (desktop) -->
+    <!-- Desktop upload -->
     <div class="desktop-only">
-      <div class="lbl">1. Документ</div>
+      <div class="section-title">Документ</div>
       <div class="drop-zone" id="dropZone">
         <input type="file" id="fileInput" accept=".docx">
-        <div class="drop-icon">📁</div>
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
         <div class="drop-text">Перетащите или <b>выберите .docx</b></div>
         <div class="fname" id="fileName"></div>
       </div>
     </div>
-    <!-- Mobile file input (hidden, triggered by button) -->
-    <input type="file" id="fileInputMobile" accept=".docx" class="mobile-only" style="display:none">
+
+    <div class="divider desktop-only"></div>
 
     <!-- Stamp selection -->
     <div>
-      <div class="lbl">Печать</div>
+      <div class="section-title">Печать</div>
       <div class="stamps-grid">
         {% for key, stamp in stamps.items() %}
         <label class="stamp-opt">
@@ -345,43 +349,44 @@ body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
+    <div class="divider"></div>
+
     <!-- Size -->
     <div>
-      <div class="lbl">Размер печати</div>
+      <div class="section-title">Размер</div>
       <div class="slider-row">
         <input type="range" id="sizeSlider" min="8" max="40" value="20" oninput="onSizeChange(this.value)">
         <span class="sval" id="sizeVal">20%</span>
       </div>
     </div>
 
-    <!-- Add stamp button (desktop) -->
-    <div class="desktop-only">
-      <button class="btn-green" id="addStampBtn" onclick="addStampToPage()" disabled>
-        ➕ Добавить печать на страницу
-      </button>
-    </div>
+    <!-- Add stamp (desktop) -->
+    <button class="btn btn-add desktop-only" id="addStampBtn" onclick="addStampToPage()" disabled>
+      + Добавить печать на страницу
+    </button>
+
+    <div class="divider"></div>
 
     <!-- Stamp list -->
     <div>
-      <div class="lbl">Добавленные печати</div>
+      <div class="section-title">Добавленные печати</div>
       <div class="stamp-list" id="stampList">
         <div class="empty-list">Нет печатей</div>
       </div>
     </div>
 
-    <!-- Status -->
     <div id="statusEl" class="status"></div>
 
-    <!-- Buttons (desktop) -->
+    <!-- Desktop actions -->
     <div class="desktop-only" style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn" id="applyBtn" onclick="applyAll()" disabled>📥 Скачать PDF</button>
-      <button class="btn-outline" id="resetBtn" onclick="resetAll()" style="display:none">🔄 Другой документ</button>
+      <button class="btn btn-primary" id="applyBtn" onclick="applyAll()" disabled>Скачать PDF</button>
+      <button class="btn btn-ghost" id="resetBtn" onclick="resetAll()" style="display:none">Загрузить другой файл</button>
     </div>
 
-  </div><!-- /sheet-content -->
-</div><!-- /panel -->
+  </div>
+</div>
 
-</div><!-- /app -->
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
@@ -396,52 +401,40 @@ let stampsList = [], stampIdCounter = 0;
 let pageWidth = 0, pageHeight = 0, renderScale = 1;
 let sheetExpanded = false;
 
-// Elements
-const fileInput = document.getElementById('fileInput');
-const fileInputMobile = document.getElementById('fileInputMobile');
-const dropZone = document.getElementById('dropZone');
-const fileName = document.getElementById('fileName');
-const placeholder = document.getElementById('placeholder');
-const previewWrapper = document.getElementById('previewWrapper');
-const pdfCanvas = document.getElementById('pdfCanvas');
-const pageBar = document.getElementById('pageBar');
-const pageInfo = document.getElementById('pageInfo');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const delPageBtn = document.getElementById('delPageBtn');
-const deletedOverlay = document.getElementById('deletedOverlay');
-const addStampBtn = document.getElementById('addStampBtn');
-const stampListEl = document.getElementById('stampList');
-const applyBtn = document.getElementById('applyBtn');
-const resetBtn = document.getElementById('resetBtn');
-const statusEl = document.getElementById('statusEl');
-const mobileTitle = document.getElementById('mobileTitle');
-const mobileAddBtn = document.getElementById('mobileAddBtn');
-const mobileApplyBtn = document.getElementById('mobileApplyBtn');
-const panel = document.getElementById('panel');
+const $ = id => document.getElementById(id);
+const fileInput = $('fileInput');
+const fileInputMobile = $('fileInputMobile');
+const dropZone = $('dropZone');
+const fileName = $('fileName');
+const placeholder = $('placeholder');
+const previewWrapper = $('previewWrapper');
+const pdfCanvas = $('pdfCanvas');
+const pageBar = $('pageBar');
+const pageInfo = $('pageInfo');
+const prevBtn = $('prevBtn');
+const nextBtn = $('nextBtn');
+const delPageBtn = $('delPageBtn');
+const deletedOverlay = $('deletedOverlay');
+const addStampBtn = $('addStampBtn');
+const stampListEl = $('stampList');
+const applyBtn = $('applyBtn');
+const resetBtn = $('resetBtn');
+const statusEl = $('statusEl');
+const mobileTitle = $('mobileTitle');
+const mobileAddBtn = $('mobileAddBtn');
+const mobileApplyBtn = $('mobileApplyBtn');
+const panel = $('panel');
 
-// Mobile sheet toggle
 function toggleSheet() {
   if (!isMobile()) return;
   sheetExpanded = !sheetExpanded;
-  panel.style.maxHeight = sheetExpanded ? '70vh' : '160px';
+  panel.style.maxHeight = sheetExpanded ? '72vh' : '56px';
 }
+if (isMobile()) panel.style.maxHeight = '56px';
 
-// Init mobile sheet
-if (isMobile()) panel.style.maxHeight = '160px';
+fileInput && fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+fileInputMobile && fileInputMobile.addEventListener('change', () => { if (fileInputMobile.files[0]) handleFile(fileInputMobile.files[0]); });
 
-// File inputs
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
-fileInputMobile.addEventListener('change', () => { if (fileInputMobile.files[0]) handleFile(fileInputMobile.files[0]); });
-
-// Mobile file button triggers correct input
-document.querySelector('.sheet-handle .btn').addEventListener('click', (e) => {
-  e.stopPropagation();
-  if (isMobile()) fileInputMobile.click();
-  else fileInput.click();
-});
-
-// Desktop drop zone
 if (dropZone) {
   ['dragover','dragleave','drop'].forEach(evt => {
     dropZone.addEventListener(evt, e => {
@@ -456,9 +449,9 @@ if (dropZone) {
 async function handleFile(file) {
   if (!file.name.endsWith('.docx')) { showStatus('error', 'Нужен файл .docx'); return; }
   currentFilename = file.name.replace('.docx', '');
-  if (fileName) { fileName.textContent = '✅ ' + file.name; fileName.style.display = 'block'; }
-  if (mobileTitle) mobileTitle.textContent = '📄 ' + file.name.slice(0, 18) + (file.name.length > 18 ? '…' : '');
-  showStatus('loading', 'Конвертирую документ...');
+  if (fileName) { fileName.textContent = file.name; fileName.style.display = 'block'; }
+  if (mobileTitle) mobileTitle.textContent = file.name.slice(0, 20) + (file.name.length > 20 ? '…' : '');
+  showStatus('loading', 'Конвертирую...');
   setControlsDisabled(true);
 
   const fd = new FormData();
@@ -471,8 +464,7 @@ async function handleFile(file) {
     totalPages = data.page_count;
     currentPage = 1;
     deletedPages = new Set();
-    stampsList.forEach(s => s.el.remove());
-    stampsList = [];
+    stampsList.forEach(s => s.el.remove()); stampsList = [];
     showStatus('', '');
     pdfDoc = null;
     await renderPage(currentPage);
@@ -481,18 +473,14 @@ async function handleFile(file) {
     previewWrapper.style.display = 'block';
     setControlsDisabled(false);
     if (resetBtn) resetBtn.style.display = 'block';
-    updatePageUI();
-    renderStampList();
-    // Auto-collapse sheet on mobile after load
-    if (isMobile()) { sheetExpanded = false; panel.style.maxHeight = '160px'; }
-  } catch(e) { showStatus('error', '❌ ' + e.message); setControlsDisabled(false); }
+    updatePageUI(); renderStampList();
+    if (isMobile()) { sheetExpanded = false; panel.style.maxHeight = '56px'; }
+  } catch(e) { showStatus('error', e.message); setControlsDisabled(false); }
 }
 
-function setControlsDisabled(dis) {
-  if (applyBtn) applyBtn.disabled = dis || !jobId;
-  if (addStampBtn) addStampBtn.disabled = dis || !jobId;
-  if (mobileApplyBtn) mobileApplyBtn.disabled = dis || !jobId;
-  if (mobileAddBtn) mobileAddBtn.disabled = dis || !jobId;
+function setControlsDisabled(d) {
+  const dis = d || !jobId;
+  [applyBtn, addStampBtn, mobileApplyBtn, mobileAddBtn].forEach(el => { if (el) el.disabled = dis; });
 }
 
 async function renderPage(num) {
@@ -501,9 +489,9 @@ async function renderPage(num) {
   const vp = page.getViewport({ scale: 1 });
   pageWidth = vp.width; pageHeight = vp.height;
 
-  const scroll = document.getElementById('previewScroll');
-  const avW = scroll.clientWidth - (isMobile() ? 16 : 40);
-  const avH = scroll.clientHeight - (isMobile() ? 16 : 40);
+  const scroll = $('previewScroll');
+  const avW = scroll.clientWidth - (isMobile() ? 24 : 56);
+  const avH = scroll.clientHeight - (isMobile() ? 24 : 56);
   renderScale = Math.min(avW / pageWidth, avH / pageHeight, isMobile() ? 2 : 1.8);
 
   const scaledVp = page.getViewport({ scale: renderScale });
@@ -516,20 +504,18 @@ async function renderPage(num) {
 }
 
 function updatePageUI() {
-  pageInfo.textContent = `Стр ${currentPage} / ${totalPages}`;
+  pageInfo.textContent = `${currentPage} / ${totalPages}`;
   prevBtn.disabled = currentPage <= 1;
   nextBtn.disabled = currentPage >= totalPages;
   const isDel = deletedPages.has(currentPage);
-  delPageBtn.textContent = isDel ? '↩ Вернуть' : '🗑 Удалить';
+  delPageBtn.textContent = isDel ? 'Восстановить' : 'Удалить страницу';
   delPageBtn.className = isDel ? 'restore-btn' : 'del-page-btn';
 }
 
 async function goPage(dir) {
   const next = currentPage + dir;
   if (next < 1 || next > totalPages) return;
-  currentPage = next;
-  updatePageUI();
-  await renderPage(currentPage);
+  currentPage = next; updatePageUI(); await renderPage(currentPage);
 }
 
 function toggleDeletePage() {
@@ -540,20 +526,17 @@ function toggleDeletePage() {
   renderStampList();
 }
 
-// ─── STAMPS ───────────────────────────────────────
-
 function getSelectedStamp() { return document.querySelector('input[name=stamp]:checked').value; }
 
 function onSizeChange(val) {
-  document.getElementById('sizeVal').textContent = val + '%';
+  $('sizeVal').textContent = val + '%';
   const size = parseFloat(val);
   const cw = pdfCanvas.clientWidth || pdfCanvas.width;
   stampsList.filter(s => s.page === currentPage).forEach(s => {
     s.el.style.width = (cw * size / 100) + 'px';
     s.size = size;
   });
-  // Update slider gradient
-  const slider = document.getElementById('sizeSlider');
+  const slider = $('sizeSlider');
   const pct = ((val - slider.min) / (slider.max - slider.min) * 100).toFixed(1);
   slider.style.setProperty('--pct', pct + '%');
 }
@@ -561,7 +544,7 @@ function onSizeChange(val) {
 function addStampToPage() {
   if (!jobId) return;
   const stampKey = getSelectedStamp();
-  const size = parseFloat(document.getElementById('sizeSlider').value);
+  const size = parseFloat($('sizeSlider').value);
   const id = ++stampIdCounter;
   const cw = pdfCanvas.clientWidth || pdfCanvas.width;
   const ch = pdfCanvas.clientHeight || pdfCanvas.height;
@@ -569,16 +552,12 @@ function addStampToPage() {
 
   const el = createStampEl(id, stampKey, stampPxW);
   previewWrapper.appendChild(el);
-
   el.style.left = ((cw - stampPxW) / 2) + 'px';
   el.style.top = (ch * 0.68) + 'px';
 
   stampsList.push({ id, page: currentPage, stamp: stampKey, el, size });
-  refreshStampsOnCanvas();
-  renderStampList();
-
-  // Collapse sheet on mobile so user can see the stamp
-  if (isMobile()) { sheetExpanded = false; panel.style.maxHeight = '160px'; }
+  refreshStampsOnCanvas(); renderStampList();
+  if (isMobile()) { sheetExpanded = false; panel.style.maxHeight = '56px'; }
 }
 
 function createStampEl(id, stampKey, stampPxW) {
@@ -586,17 +565,13 @@ function createStampEl(id, stampKey, stampPxW) {
   el.className = 'stamp-el';
   el.dataset.id = id;
   el.style.cssText = `width:${stampPxW}px;height:auto;display:block;`;
-
   const img = document.createElement('img');
   img.src = `/stamp_image/${stampKey}?t=${Date.now()}`;
   el.appendChild(img);
-
   const rm = document.createElement('button');
-  rm.className = 'remove-stamp';
-  rm.innerHTML = '✕';
+  rm.className = 'remove-stamp'; rm.innerHTML = '✕';
   rm.addEventListener('click', e => { e.stopPropagation(); removeStamp(id); });
   el.appendChild(rm);
-
   makeDraggable(el);
   return el;
 }
@@ -604,9 +579,7 @@ function createStampEl(id, stampKey, stampPxW) {
 function removeStamp(id) {
   const idx = stampsList.findIndex(s => s.id === id);
   if (idx === -1) return;
-  stampsList[idx].el.remove();
-  stampsList.splice(idx, 1);
-  renderStampList();
+  stampsList[idx].el.remove(); stampsList.splice(idx, 1); renderStampList();
 }
 
 function refreshStampsOnCanvas() {
@@ -614,23 +587,14 @@ function refreshStampsOnCanvas() {
 }
 
 function renderStampList() {
-  const LABELS = {
-    {% for key, stamp in stamps.items() %}
-    '{{ key }}': '{{ stamp.label }}',
-    {% endfor %}
-  };
-  if (stampsList.length === 0) {
-    stampListEl.innerHTML = '<div class="empty-list">Нет печатей</div>';
-    return;
-  }
+  const LABELS = { {% for key, stamp in stamps.items() %}'{{ key }}': '{{ stamp.label }}',{% endfor %} };
+  if (!stampsList.length) { stampListEl.innerHTML = '<div class="empty-list">Нет печатей</div>'; return; }
   stampListEl.innerHTML = '';
   stampsList.forEach(s => {
     const div = document.createElement('div');
     div.className = 'stamp-item';
     const isDel = deletedPages.has(s.page);
-    div.innerHTML = `<span class="pg">стр ${s.page}</span>
-      <span style="flex:1;font-size:11px;${isDel?'text-decoration:line-through;color:#c5c9d8':''}">${LABELS[s.stamp]||s.stamp}</span>
-      <span class="del-s">✕</span>`;
+    div.innerHTML = `<span class="pg">${s.page}</span><span class="nm" style="${isDel?'text-decoration:line-through;opacity:0.4':''}">${LABELS[s.stamp]||s.stamp}</span><span class="del-s">✕</span>`;
     div.querySelector('.del-s').addEventListener('click', e => { e.stopPropagation(); removeStamp(s.id); });
     div.addEventListener('click', () => goToPage(s.page));
     stampListEl.appendChild(div);
@@ -642,62 +606,35 @@ async function goToPage(num) {
   currentPage = num; updatePageUI(); await renderPage(currentPage);
 }
 
-// ─── DRAG ─────────────────────────────────────────
-
 function makeDraggable(el) {
   let dragging = false, ox = 0, oy = 0;
-
-  function startDrag(cx, cy) {
-    dragging = true;
-    const r = el.getBoundingClientRect();
-    ox = cx - r.left; oy = cy - r.top;
-  }
-  function moveDrag(cx, cy) {
+  const start = (cx, cy) => { dragging = true; const r = el.getBoundingClientRect(); ox = cx - r.left; oy = cy - r.top; };
+  const move = (cx, cy) => {
     if (!dragging) return;
     const wr = previewWrapper.getBoundingClientRect();
-    let x = cx - wr.left - ox;
-    let y = cy - wr.top - oy;
-    x = Math.max(0, Math.min(x, wr.width - el.offsetWidth));
-    y = Math.max(0, Math.min(y, wr.height - el.offsetHeight));
+    let x = Math.max(0, Math.min(cx - wr.left - ox, wr.width - el.offsetWidth));
+    let y = Math.max(0, Math.min(cy - wr.top - oy, wr.height - el.offsetHeight));
     el.style.left = x + 'px'; el.style.top = y + 'px';
-  }
-
-  el.addEventListener('mousedown', e => { if (e.target.classList.contains('remove-stamp')) return; startDrag(e.clientX, e.clientY); e.preventDefault(); });
-  document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+  };
+  el.addEventListener('mousedown', e => { if (e.target.classList.contains('remove-stamp')) return; start(e.clientX, e.clientY); e.preventDefault(); });
+  document.addEventListener('mousemove', e => move(e.clientX, e.clientY));
   document.addEventListener('mouseup', () => { dragging = false; });
-
-  el.addEventListener('touchstart', e => {
-    if (e.target.classList.contains('remove-stamp')) return;
-    const t = e.touches[0]; startDrag(t.clientX, t.clientY); e.preventDefault();
-  }, { passive: false });
-  document.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    moveDrag(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault();
-  }, { passive: false });
+  el.addEventListener('touchstart', e => { if (e.target.classList.contains('remove-stamp')) return; const t = e.touches[0]; start(t.clientX, t.clientY); e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', e => { if (!dragging) return; move(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
   document.addEventListener('touchend', () => { dragging = false; });
 }
-
-// ─── APPLY ────────────────────────────────────────
 
 async function applyAll() {
   if (!jobId) return;
   const canvasRect = pdfCanvas.getBoundingClientRect();
   const cw = canvasRect.width, ch = canvasRect.height;
-
   const stampsData = stampsList.map(s => {
     const sr = s.el.getBoundingClientRect();
-    return {
-      page: s.page, stamp: s.stamp,
-      x: ((sr.left - canvasRect.left) / cw) * 100,
-      y: ((sr.top - canvasRect.top) / ch) * 100,
-      size: s.size
-    };
+    return { page: s.page, stamp: s.stamp, x: ((sr.left - canvasRect.left) / cw) * 100, y: ((sr.top - canvasRect.top) / ch) * 100, size: s.size };
   });
-
   showStatus('loading', 'Генерирую PDF...');
   if (applyBtn) applyBtn.disabled = true;
   if (mobileApplyBtn) mobileApplyBtn.disabled = true;
-
   try {
     const resp = await fetch('/process', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -707,41 +644,35 @@ async function applyAll() {
     if (!resp.ok) throw new Error(data.error);
     const a = document.createElement('a');
     a.href = data.download_url; a.download = currentFilename + '_с_печатью.pdf'; a.click();
-    showStatus('success', '✅ PDF скачивается!');
-  } catch(e) {
-    showStatus('error', '❌ ' + e.message);
-  } finally {
-    if (applyBtn) applyBtn.disabled = false;
-    if (mobileApplyBtn) mobileApplyBtn.disabled = false;
-  }
+    showStatus('success', 'PDF скачивается');
+  } catch(e) { showStatus('error', e.message); }
+  finally { if (applyBtn) applyBtn.disabled = false; if (mobileApplyBtn) mobileApplyBtn.disabled = false; }
 }
 
 function resetAll() {
   jobId = null; currentFilename = ''; pdfDoc = null;
   currentPage = 1; totalPages = 0; deletedPages = new Set();
   stampsList.forEach(s => s.el.remove()); stampsList = [];
-  fileInput.value = ''; fileInputMobile.value = '';
+  if (fileInput) fileInput.value = '';
+  if (fileInputMobile) fileInputMobile.value = '';
   if (fileName) fileName.style.display = 'none';
-  if (mobileTitle) mobileTitle.textContent = '📄 Загрузите файл';
+  if (mobileTitle) mobileTitle.textContent = 'Загрузите файл';
   placeholder.style.display = 'block';
   previewWrapper.style.display = 'none';
   pageBar.style.display = 'none';
   setControlsDisabled(true);
   if (resetBtn) resetBtn.style.display = 'none';
-  showStatus('', '');
-  renderStampList();
+  showStatus('', ''); renderStampList();
 }
 
 function showStatus(type, msg) {
-  statusEl.className = 'status';
-  statusEl.innerHTML = '';
+  statusEl.className = 'status'; statusEl.innerHTML = '';
   if (!type || !msg) { statusEl.style.display = 'none'; return; }
   statusEl.classList.add(type);
   if (type === 'loading') { statusEl.innerHTML = `<div class="spinner"></div><span>${msg}</span>`; statusEl.style.display = 'flex'; }
   else { statusEl.textContent = msg; statusEl.style.display = type === 'success' ? 'flex' : 'block'; }
 }
 
-// Init slider gradient
 onSizeChange(20);
 </script>
 </body>
