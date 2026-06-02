@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Штамп на документ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  h1 {
+    font-size: 22px;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+
+  /* File drop zone */
+  .drop-zone {
+    border: 2px dashed #d0d7e0;
+    border-radius: 12px;
+    padding: 36px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: #4f6ef7;
+    background: #f5f7ff;
+  }
+  .drop-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon { font-size: 36px; margin-bottom: 10px; }
+  .drop-text { color: #555; font-size: 15px; }
+  .drop-text span { color: #4f6ef7; font-weight: 600; }
+  .drop-hint { color: #aaa; font-size: 12px; margin-top: 6px; }
+  .file-chosen {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: #f0f4ff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+  }
+  .file-chosen .fname { font-weight: 600; color: #4f6ef7; }
+
+  /* Stamp selection */
+  .stamps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stamp-option {
+    position: relative;
+  }
+  .stamp-option input[type=radio] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+  }
+  .stamp-card {
+    border: 2px solid #e8ecf0;
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 100%;
+  }
+  .stamp-card:hover {
+    border-color: #b0bcff;
+    background: #f8f9ff;
+  }
+  .stamp-option input:checked + .stamp-card {
+    border-color: #4f6ef7;
+    background: #f0f4ff;
+    box-shadow: 0 0 0 3px rgba(79,110,247,0.15);
+  }
+  .stamp-card img {
+    width: 100%;
+    height: 60px;
+    object-fit: contain;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    background: #f8f8f8;
+  }
+  .stamp-name {
+    font-size: 11px;
+    color: #555;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .checkmark {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #4f6ef7;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+  .stamp-option input:checked ~ .checkmark { display: flex; }
+
+  /* Position */
+  .position-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .pos-option input[type=radio] { display: none; }
+  .pos-card {
+    border: 2px solid #e8ecf0;
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    color: #666;
+  }
+  .pos-card:hover { border-color: #b0bcff; background: #f8f9ff; }
+  .pos-option input:checked + .pos-card {
+    border-color: #4f6ef7;
+    background: #f0f4ff;
+    color: #4f6ef7;
+    font-weight: 600;
+  }
+  .pos-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: #4f6ef7;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn:hover { background: #3a55e0; }
+  .btn:disabled { background: #a0aec0; cursor: not-allowed; }
+
+  /* Status */
+  .status {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: none;
+  }
+  .status.loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #eff6ff;
+    color: #2563eb;
+  }
+  .status.error {
+    display: block;
+    background: #fef2f2;
+    color: #dc2626;
+  }
+  .status.success {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 3px solid #bfdbfe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📄 Поставить печать</h1>
+  <p class="subtitle">Загрузите документ, выберите печать — получите PDF</p>
+
+  <form id="mainForm">
+    <!-- File upload -->
+    <div class="section-label">1. Документ (.docx)</div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".docx" required>
+      <div class="drop-icon">📁</div>
+      <div class="drop-text">Перетащите файл или <span>нажмите для выбора</span></div>
+      <div class="drop-hint">Поддерживается формат .docx</div>
+    </div>
+    <div class="file-chosen" id="fileChosen">
+      <span>✅</span>
+      <span class="fname" id="fileName"></span>
+    </div>
+
+    <!-- Stamp selection -->
+    <div class="section-label" style="margin-bottom:10px">2. Выберите печать</div>
+    <div class="stamps-grid">
+      {% for key, stamp in stamps.items() %}
+      <label class="stamp-option">
+        <input type="radio" name="stamp" value="{{ key }}" {% if loop.first %}checked{% endif %}>
+        <div class="stamp-card">
+          <img src="/stamp_image/{{ key }}" alt="{{ stamp.label }}">
+          <div class="stamp-name">{{ stamp.label }}</div>
+        </div>
+        <div class="checkmark">✓</div>
+      </label>
+      {% endfor %}
+    </div>
+
+    <!-- Position -->
+    <div class="section-label" style="margin-bottom:10px">3. Расположение печати</div>
+    <div class="position-grid">
+      <label class="pos-option">
+        <input type="radio" name="position" value="bottom-left" checked>
+        <div class="pos-card"><span class="pos-icon">↙</span>Слева</div>
+      </label>
+      <label class="pos-option">
+        <input type="radio" name="position" value="bottom-center">
+        <div class="pos-card"><span class="pos-icon">↓</span>По центру</div>
+      </label>
+      <label class="pos-option">
+        <input type="radio" name="position" value="bottom-right">
+        <div class="pos-card"><span class="pos-icon">↘</span>Справа</div>
+      </label>
+    </div>
+
+    <button type="submit" class="btn" id="submitBtn">
+      <span>🖨️</span> Поставить печать и скачать PDF
+    </button>
+
+    <div class="status loading" id="statusLoading">
+      <div class="spinner"></div>
+      <span>Обрабатываю документ, подождите...</span>
+    </div>
+    <div class="status error" id="statusError"></div>
+    <div class="status success" id="statusSuccess">
+      <span>✅</span> <span>PDF готов! Файл скачивается автоматически.</span>
+    </div>
+  </form>
+</div>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const fileChosen = document.getElementById('fileChosen');
+const fileName = document.getElementById('fileName');
+const dropZone = document.getElementById('dropZone');
+const form = document.getElementById('mainForm');
+const submitBtn = document.getElementById('submitBtn');
+const statusLoading = document.getElementById('statusLoading');
+const statusError = document.getElementById('statusError');
+const statusSuccess = document.getElementById('statusSuccess');
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) {
+    fileName.textContent = fileInput.files[0].name;
+    fileChosen.style.display = 'flex';
+  }
+});
+
+['dragover', 'dragleave', 'drop'].forEach(evt => {
+  dropZone.addEventListener(evt, e => {
+    e.preventDefault();
+    if (evt === 'dragover') dropZone.classList.add('dragover');
+    else dropZone.classList.remove('dragover');
+    if (evt === 'drop' && e.dataTransfer.files[0]) {
+      fileInput.files = e.dataTransfer.files;
+      fileName.textContent = e.dataTransfer.files[0].name;
+      fileChosen.style.display = 'flex';
+    }
+  });
+});
+
+function hideStatuses() {
+  statusLoading.style.display = 'none';
+  statusError.style.display = 'none';
+  statusSuccess.style.display = 'none';
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  hideStatuses();
+
+  if (!fileInput.files[0]) {
+    statusError.textContent = 'Выберите файл .docx';
+    statusError.style.display = 'block';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('docx', fileInput.files[0]);
+  formData.append('stamp', form.querySelector('input[name=stamp]:checked').value);
+  formData.append('position', form.querySelector('input[name=position]:checked').value);
+
+  submitBtn.disabled = true;
+  statusLoading.style.display = 'flex';
+
+  try {
+    const resp = await fetch('/process', { method: 'POST', body: formData });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error || 'Ошибка сервера');
+    }
+
+    // Trigger download
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const fname = (fileInput.files[0].name.replace('.docx', '')) + '_с_печатью.pdf';
+    a.href = url;
+    a.download = fname;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    statusLoading.style.display = 'none';
+    statusSuccess.style.display = 'flex';
+  } catch (err) {
+    statusLoading.style.display = 'none';
+    statusError.textContent = '❌ ' + err.message;
+    statusError.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
