@@ -6,252 +6,244 @@
 <title>Штамп на документ</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; min-height: 100vh; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #e8edf3; }
+.app { display: flex; height: 100vh; overflow: hidden; }
 
-.app { display: flex; height: 100vh; }
-
-/* LEFT PANEL */
+/* PANEL */
 .panel {
-  width: 320px;
-  flex-shrink: 0;
-  background: white;
+  width: 300px; flex-shrink: 0; background: white;
   box-shadow: 2px 0 12px rgba(0,0,0,0.08);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  padding: 24px 20px;
-  gap: 20px;
+  display: flex; flex-direction: column; overflow-y: auto;
+  padding: 20px 16px; gap: 16px;
 }
+h1 { font-size: 17px; color: #1a1a2e; font-weight: 700; }
+.sub { color: #999; font-size: 12px; margin-top: 2px; }
+.lbl { font-size: 10px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
 
-h1 { font-size: 18px; color: #1a1a2e; font-weight: 700; }
-.subtitle { color: #888; font-size: 13px; margin-top: 2px; }
-
-.section-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #999;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 8px;
-}
-
-/* Drop zone */
 .drop-zone {
-  border: 2px dashed #d0d7e0;
-  border-radius: 10px;
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
+  border: 2px dashed #d0d7e0; border-radius: 10px; padding: 16px;
+  text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
 }
-.drop-zone:hover, .drop-zone.dragover { border-color: #4f6ef7; background: #f5f7ff; }
+.drop-zone:hover { border-color: #4f6ef7; background: #f5f7ff; }
 .drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.drop-icon { font-size: 28px; }
-.drop-text { font-size: 13px; color: #555; margin-top: 6px; }
+.drop-text { font-size: 12px; color: #666; margin-top: 4px; }
 .drop-text span { color: #4f6ef7; font-weight: 600; }
-.file-name { margin-top: 8px; font-size: 12px; color: #4f6ef7; font-weight: 600; display: none; word-break: break-all; }
+.fname { margin-top: 6px; font-size: 11px; color: #4f6ef7; font-weight: 600; display: none; word-break: break-all; }
 
-/* Stamps */
-.stamps-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.stamp-option input { display: none; }
+.stamps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.stamp-opt input { display: none; }
 .stamp-card {
-  border: 2px solid #e8ecf0;
-  border-radius: 10px;
-  padding: 8px 6px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
+  border: 2px solid #e8ecf0; border-radius: 8px; padding: 6px;
+  text-align: center; cursor: pointer; transition: all 0.2s;
 }
 .stamp-card:hover { border-color: #b0bcff; }
-.stamp-option input:checked + .stamp-card { border-color: #4f6ef7; background: #f0f4ff; }
-.stamp-card img { width: 100%; height: 48px; object-fit: contain; background: #f8f8f8; border-radius: 4px; }
-.stamp-card .name { font-size: 10px; color: #555; margin-top: 4px; font-weight: 600; line-height: 1.2; }
+.stamp-opt input:checked + .stamp-card { border-color: #4f6ef7; background: #f0f4ff; }
+.stamp-card img { width: 100%; height: 40px; object-fit: contain; background: #f8f8f8; border-radius: 4px; }
+.stamp-card .nm { font-size: 9px; color: #666; margin-top: 3px; font-weight: 600; line-height: 1.2; }
 
-/* Size slider */
-.slider-row { display: flex; align-items: center; gap: 10px; }
-.slider-row input[type=range] { flex: 1; }
-.slider-val { font-size: 13px; color: #4f6ef7; font-weight: 700; min-width: 36px; text-align: right; }
+.slider-row { display: flex; align-items: center; gap: 8px; }
+.slider-row input { flex: 1; }
+.sval { font-size: 12px; color: #4f6ef7; font-weight: 700; min-width: 30px; }
 
-/* Hint */
-.hint {
-  background: #f0f4ff;
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: #4f6ef7;
-  line-height: 1.5;
+/* Stamp list */
+.stamp-list { display: flex; flex-direction: column; gap: 4px; }
+.stamp-item {
+  display: flex; align-items: center; gap: 6px;
+  background: #f5f7ff; border-radius: 6px; padding: 5px 8px; font-size: 11px; color: #333;
 }
+.stamp-item .pg { background: #4f6ef7; color: white; border-radius: 4px; padding: 1px 5px; font-size: 10px; font-weight: 700; }
+.stamp-item .del-s { margin-left: auto; cursor: pointer; color: #dc2626; font-size: 14px; line-height: 1; }
+.stamp-item .del-s:hover { opacity: 0.7; }
+.empty-list { font-size: 11px; color: #bbb; text-align: center; padding: 6px; }
 
-/* Buttons */
+.hint { background: #f0f4ff; border-radius: 8px; padding: 8px 10px; font-size: 11px; color: #4f6ef7; line-height: 1.5; }
+
 .btn {
-  padding: 12px;
-  background: #4f6ef7;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-  width: 100%;
+  padding: 11px; background: #4f6ef7; color: white; border: none;
+  border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%;
 }
 .btn:hover { background: #3a55e0; }
 .btn:disabled { background: #a0aec0; cursor: not-allowed; }
-.btn-outline {
-  padding: 10px;
-  background: white;
-  color: #4f6ef7;
-  border: 2px solid #4f6ef7;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.2s;
+.btn-sm {
+  padding: 8px; background: white; color: #4f6ef7; border: 2px solid #4f6ef7;
+  border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; width: 100%;
 }
-.btn-outline:hover { background: #f0f4ff; }
+.btn-sm:hover { background: #f0f4ff; }
+.btn-add {
+  padding: 8px; background: #ecfdf5; color: #16a34a; border: 2px solid #bbf7d0;
+  border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; width: 100%;
+}
+.btn-add:hover { background: #d1fae5; }
+.btn-add:disabled { background: #f0f0f0; color: #aaa; border-color: #e0e0e0; cursor: not-allowed; }
 
-.status { font-size: 13px; padding: 10px 12px; border-radius: 8px; display: none; }
+.status { font-size: 12px; padding: 8px 10px; border-radius: 8px; display: none; }
 .status.error { display: block; background: #fef2f2; color: #dc2626; }
-.status.success { display: flex; align-items: center; gap: 8px; background: #f0fdf4; color: #16a34a; }
-.status.loading { display: flex; align-items: center; gap: 8px; background: #eff6ff; color: #2563eb; }
-.spinner { width: 16px; height: 16px; border: 2px solid #bfdbfe; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+.status.success { display: flex; align-items: center; gap: 6px; background: #f0fdf4; color: #16a34a; }
+.status.loading { display: flex; align-items: center; gap: 6px; background: #eff6ff; color: #2563eb; }
+.spinner { width: 14px; height: 14px; border: 2px solid #bfdbfe; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* RIGHT: preview area */
+/* PREVIEW */
 .preview-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #e8edf3;
-  padding: 24px;
-  position: relative;
-  overflow: hidden;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; background: #e8edf3; overflow: hidden;
 }
 
-.preview-placeholder {
-  text-align: center;
-  color: #aaa;
+/* Page nav bar */
+.page-bar {
+  width: 100%; background: #2d3748; display: none;
+  align-items: center; justify-content: center; gap: 0; padding: 0; flex-shrink: 0;
 }
-.preview-placeholder .big-icon { font-size: 64px; margin-bottom: 12px; }
-.preview-placeholder p { font-size: 15px; }
-
-/* PDF + stamp canvas wrapper */
-.preview-wrapper {
-  position: relative;
-  display: none;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+.page-bar-inner { display: flex; align-items: center; gap: 12px; padding: 8px 16px; }
+.nav-btn {
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.25); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+.page-info { color: white; font-size: 13px; font-weight: 600; min-width: 90px; text-align: center; }
+.del-page-btn {
+  background: #dc2626; border: none; color: white; padding: 5px 10px;
+  border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.del-page-btn:hover { background: #b91c1c; }
+.del-page-btn.deleted { background: #6b7280; }
+.restore-btn {
+  background: #16a34a; border: none; color: white; padding: 5px 10px;
+  border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;
 }
 
-#pdfCanvas {
-  display: block;
-  max-width: 100%;
-  max-height: calc(100vh - 80px);
-}
+.preview-scroll { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; overflow: auto; width: 100%; }
 
-/* Stamp overlay on canvas */
-#stampOverlay {
-  position: absolute;
-  cursor: grab;
-  user-select: none;
-  display: none;
+.placeholder { text-align: center; color: #aaa; }
+.placeholder .ico { font-size: 56px; margin-bottom: 10px; }
+.placeholder p { font-size: 14px; }
+
+.preview-wrapper { position: relative; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.deleted-overlay {
+  position: absolute; inset: 0; background: rgba(220,38,38,0.18);
+  display: none; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 5;
+}
+.deleted-overlay .del-label {
+  background: #dc2626; color: white; font-size: 22px; font-weight: 700;
+  padding: 10px 24px; border-radius: 10px; letter-spacing: 1px;
+  transform: rotate(-15deg);
+}
+#pdfCanvas { display: block; max-width: 100%; }
+
+.stamp-el {
+  position: absolute; cursor: grab; user-select: none;
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
 }
-#stampOverlay:active { cursor: grabbing; }
-#stampOverlay img { width: 100%; height: 100%; pointer-events: none; }
-
-.page-indicator {
-  position: absolute;
-  bottom: 8px;
-  right: 12px;
-  background: rgba(0,0,0,0.45);
-  color: white;
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 20px;
+.stamp-el:active { cursor: grabbing; }
+.stamp-el img { width: 100%; height: 100%; pointer-events: none; display: block; }
+.stamp-el .remove-stamp {
+  position: absolute; top: -8px; right: -8px; background: #dc2626;
+  color: white; border: none; border-radius: 50%; width: 20px; height: 20px;
+  font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- LEFT PANEL -->
-  <div class="panel">
-    <div>
-      <h1>📄 Штамп на документ</h1>
-      <div class="subtitle">Загрузите документ, расположите печать</div>
+<!-- PANEL -->
+<div class="panel">
+  <div>
+    <h1>📄 Штамп на документ</h1>
+    <div class="sub">Несколько печатей · Листалка · Удаление страниц</div>
+  </div>
+
+  <div>
+    <div class="lbl">1. Документ (.docx)</div>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInput" accept=".docx">
+      <div style="font-size:24px">📁</div>
+      <div class="drop-text">Перетащите или <span>выберите .docx</span></div>
+      <div class="fname" id="fileName"></div>
     </div>
+  </div>
 
-    <!-- Step 1 -->
-    <div>
-      <div class="section-label">1. Загрузить документ</div>
-      <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput" accept=".docx">
-        <div class="drop-icon">📁</div>
-        <div class="drop-text">Перетащите или <span>выберите .docx</span></div>
-        <div class="file-name" id="fileName"></div>
-      </div>
+  <div>
+    <div class="lbl">2. Печать</div>
+    <div class="stamps-grid">
+      {% for key, stamp in stamps.items() %}
+      <label class="stamp-opt">
+        <input type="radio" name="stamp" value="{{ key }}" {% if loop.first %}checked{% endif %}>
+        <div class="stamp-card">
+          <img src="/stamp_image/{{ key }}" alt="{{ stamp.label }}">
+          <div class="nm">{{ stamp.label }}</div>
+        </div>
+      </label>
+      {% endfor %}
     </div>
+  </div>
 
-    <!-- Step 2 -->
-    <div>
-      <div class="section-label">2. Выбрать печать</div>
-      <div class="stamps-grid">
-        {% for key, stamp in stamps.items() %}
-        <label class="stamp-option">
-          <input type="radio" name="stamp" value="{{ key }}" {% if loop.first %}checked{% endif %}
-                 onchange="updateStampImage()">
-          <div class="stamp-card">
-            <img src="/stamp_image/{{ key }}" alt="{{ stamp.label }}">
-            <div class="name">{{ stamp.label }}</div>
-          </div>
-        </label>
-        {% endfor %}
-      </div>
+  <div>
+    <div class="lbl">3. Размер</div>
+    <div class="slider-row">
+      <input type="range" id="sizeSlider" min="8" max="40" value="20" oninput="document.getElementById('sizeVal').textContent=this.value+'%'">
+      <span class="sval" id="sizeVal">20%</span>
     </div>
+  </div>
 
-    <!-- Step 3 -->
-    <div>
-      <div class="section-label">3. Размер печати</div>
-      <div class="slider-row">
-        <input type="range" id="sizeSlider" min="10" max="40" value="22" oninput="updateStampSize()">
-        <span class="slider-val" id="sizeVal">22%</span>
-      </div>
-    </div>
-
-    <div class="hint">
-      👆 После загрузки документа — <b>перетащите печать</b> в нужное место на превью справа
-    </div>
-
-    <div id="statusEl" class="status"></div>
-
-    <button class="btn" id="applyBtn" onclick="applyStamp()" disabled>
-      🖨️ Применить и скачать PDF
-    </button>
-
-    <button class="btn-outline" id="resetBtn" onclick="resetAll()" style="display:none">
-      🔄 Загрузить другой документ
+  <div>
+    <button class="btn-add" id="addStampBtn" onclick="addStampToPage()" disabled>
+      ➕ Добавить печать на эту страницу
     </button>
   </div>
 
-  <!-- RIGHT: PREVIEW -->
-  <div class="preview-area" id="previewArea">
-    <div class="preview-placeholder" id="placeholder">
-      <div class="big-icon">📋</div>
+  <div>
+    <div class="lbl">Добавленные печати</div>
+    <div class="stamp-list" id="stampList">
+      <div class="empty-list">Нет печатей</div>
+    </div>
+  </div>
+
+  <div class="hint">
+    👆 Перетащите печать в нужное место<br>
+    🗑️ Удалите лишние страницы кнопкой вверху<br>
+    ✅ Нажмите «Скачать» когда готово
+  </div>
+
+  <div id="statusEl" class="status"></div>
+
+  <button class="btn" id="applyBtn" onclick="applyAll()" disabled>
+    📥 Скачать PDF
+  </button>
+  <button class="btn-sm" id="resetBtn" onclick="resetAll()" style="display:none">
+    🔄 Загрузить другой документ
+  </button>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview-area">
+  <div class="page-bar" id="pageBar">
+    <div class="page-bar-inner">
+      <button class="nav-btn" id="prevBtn" onclick="goPage(-1)">‹</button>
+      <div class="page-info" id="pageInfo">Стр 1 / 1</div>
+      <button class="nav-btn" id="nextBtn" onclick="goPage(1)">›</button>
+      <button class="del-page-btn" id="delPageBtn" onclick="toggleDeletePage()">🗑 Удалить страницу</button>
+    </div>
+  </div>
+
+  <div class="preview-scroll">
+    <div class="placeholder" id="placeholder">
+      <div class="ico">📋</div>
       <p>Загрузите документ,<br>чтобы увидеть превью</p>
     </div>
 
     <div class="preview-wrapper" id="previewWrapper">
       <canvas id="pdfCanvas"></canvas>
-      <div id="stampOverlay">
-        <img id="stampImg" src="" alt="печать">
+      <div class="deleted-overlay" id="deletedOverlay">
+        <div class="del-label">УДАЛЕНО</div>
       </div>
-      <div class="page-indicator" id="pageIndicator"></div>
     </div>
   </div>
+</div>
 
 </div>
 
@@ -259,12 +251,13 @@ h1 { font-size: 18px; color: #1a1a2e; font-weight: 700; }
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-let jobId = null;
-let currentFilename = '';
-let pdfDoc = null;
+let jobId = null, currentFilename = '', pdfDoc = null;
+let currentPage = 1, totalPages = 0;
+let deletedPages = new Set();   // 1-based
+let stampsList = [];            // {id, page, stamp, x, y, size, el}
+let stampIdCounter = 0;
 let pageWidth = 0, pageHeight = 0;
-let isDragging = false;
-let dragOffX = 0, dragOffY = 0;
+let renderScale = 1;
 
 const fileInput = document.getElementById('fileInput');
 const dropZone = document.getElementById('dropZone');
@@ -272,14 +265,19 @@ const fileName = document.getElementById('fileName');
 const placeholder = document.getElementById('placeholder');
 const previewWrapper = document.getElementById('previewWrapper');
 const pdfCanvas = document.getElementById('pdfCanvas');
-const stampOverlay = document.getElementById('stampOverlay');
-const stampImg = document.getElementById('stampImg');
+const pageBar = document.getElementById('pageBar');
+const pageInfo = document.getElementById('pageInfo');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const delPageBtn = document.getElementById('delPageBtn');
+const deletedOverlay = document.getElementById('deletedOverlay');
+const addStampBtn = document.getElementById('addStampBtn');
+const stampListEl = document.getElementById('stampList');
 const applyBtn = document.getElementById('applyBtn');
 const resetBtn = document.getElementById('resetBtn');
 const statusEl = document.getElementById('statusEl');
-const pageIndicator = document.getElementById('pageIndicator');
 
-// File input
+// File handling
 fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
 ['dragover','dragleave','drop'].forEach(evt => {
   dropZone.addEventListener(evt, e => {
@@ -295,147 +293,256 @@ async function handleFile(file) {
   currentFilename = file.name.replace('.docx', '');
   fileName.textContent = '✅ ' + file.name;
   fileName.style.display = 'block';
-  showStatus('loading', 'Конвертирую документ...');
-  applyBtn.disabled = true;
+  showStatus('loading', 'Конвертирую...');
+  applyBtn.disabled = true; addStampBtn.disabled = true;
 
   const fd = new FormData();
   fd.append('docx', file);
-
   try {
     const resp = await fetch('/convert', { method: 'POST', body: fd });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error);
     jobId = data.job_id;
+    totalPages = data.page_count;
+    currentPage = 1;
+    deletedPages = new Set();
+    stampsList = [];
     showStatus('', '');
-    await loadPdfPreview(jobId);
+    await renderPage(currentPage);
+    pageBar.style.display = 'flex';
+    placeholder.style.display = 'none';
+    previewWrapper.style.display = 'block';
+    applyBtn.disabled = false;
+    addStampBtn.disabled = false;
     resetBtn.style.display = 'block';
-  } catch(e) {
-    showStatus('error', '❌ ' + e.message);
-  }
+    updatePageUI();
+    renderStampList();
+  } catch(e) { showStatus('error', '❌ ' + e.message); }
 }
 
-async function loadPdfPreview(jid) {
-  const url = `/preview_pdf/${jid}`;
-  pdfDoc = await pdfjsLib.getDocument(url).promise;
-  const totalPages = pdfDoc.numPages;
-  const page = await pdfDoc.getPage(totalPages); // show last page
-  pageIndicator.textContent = `Страница ${totalPages} из ${totalPages}`;
+async function renderPage(num) {
+  if (!pdfDoc) {
+    pdfDoc = await pdfjsLib.getDocument(`/preview_pdf/${jobId}`).promise;
+  }
+  const page = await pdfDoc.getPage(num);
+  const vp = page.getViewport({ scale: 1 });
+  pageWidth = vp.width; pageHeight = vp.height;
 
-  const viewport = page.getViewport({ scale: 1 });
-  pageWidth = viewport.width;
-  pageHeight = viewport.height;
+  const maxW = document.querySelector('.preview-scroll').clientWidth - 40;
+  const maxH = document.querySelector('.preview-scroll').clientHeight - 40;
+  renderScale = Math.min(maxW / pageWidth, maxH / pageHeight, 1.8);
 
-  // Scale to fit preview area
-  const maxW = document.getElementById('previewArea').clientWidth - 48;
-  const maxH = window.innerHeight - 80;
-  const scale = Math.min(maxW / pageWidth, maxH / pageHeight, 1.5);
-
-  const scaledVp = page.getViewport({ scale });
+  const scaledVp = page.getViewport({ scale: renderScale });
   pdfCanvas.width = scaledVp.width;
   pdfCanvas.height = scaledVp.height;
+  await page.render({ canvasContext: pdfCanvas.getContext('2d'), viewport: scaledVp }).promise;
 
-  const ctx = pdfCanvas.getContext('2d');
-  await page.render({ canvasContext: ctx, viewport: scaledVp }).promise;
+  // Show/hide deleted overlay
+  deletedOverlay.style.display = deletedPages.has(num) ? 'flex' : 'none';
 
-  placeholder.style.display = 'none';
-  previewWrapper.style.display = 'block';
-
-  // Place stamp initially bottom-left
-  updateStampImage();
-  positionStampDefault();
-  applyBtn.disabled = false;
+  // Reposition existing stamps for this page
+  refreshStampsOnCanvas();
 }
 
-function updateStampImage() {
-  const key = document.querySelector('input[name=stamp]:checked').value;
-  stampImg.src = `/stamp_image/${key}?t=${Date.now()}`;
-  stampOverlay.style.display = 'block';
+function updatePageUI() {
+  pageInfo.textContent = `Стр ${currentPage} / ${totalPages}`;
+  prevBtn.disabled = currentPage <= 1;
+  nextBtn.disabled = currentPage >= totalPages;
+  const isDeleted = deletedPages.has(currentPage);
+  delPageBtn.textContent = isDeleted ? '↩ Восстановить' : '🗑 Удалить страницу';
+  delPageBtn.className = isDeleted ? 'restore-btn' : 'del-page-btn';
 }
 
-function positionStampDefault() {
-  const w = pdfCanvas.clientWidth || pdfCanvas.width;
-  const h = pdfCanvas.clientHeight || pdfCanvas.height;
-  const stampW = w * 0.22;
-  stampOverlay.style.width = stampW + 'px';
-  stampOverlay.style.height = 'auto';
-  stampOverlay.style.left = '20px';
-  stampOverlay.style.top = (h - stampW * 0.7 - 20) + 'px';
+async function goPage(dir) {
+  const next = currentPage + dir;
+  if (next < 1 || next > totalPages) return;
+  currentPage = next;
+  updatePageUI();
+  await renderPage(currentPage);
 }
 
-function updateStampSize() {
-  const pct = document.getElementById('sizeSlider').value;
-  document.getElementById('sizeVal').textContent = pct + '%';
-  const w = pdfCanvas.clientWidth || pdfCanvas.width;
-  stampOverlay.style.width = (w * pct / 100) + 'px';
+function toggleDeletePage() {
+  if (deletedPages.has(currentPage)) {
+    deletedPages.delete(currentPage);
+  } else {
+    deletedPages.add(currentPage);
+  }
+  updatePageUI();
+  deletedOverlay.style.display = deletedPages.has(currentPage) ? 'flex' : 'none';
+  renderStampList();
 }
 
-// Drag stamp
-stampOverlay.addEventListener('mousedown', e => {
-  isDragging = true;
-  const rect = stampOverlay.getBoundingClientRect();
-  dragOffX = e.clientX - rect.left;
-  dragOffY = e.clientY - rect.top;
-  e.preventDefault();
-});
+// ---- STAMPS ----
 
-document.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  const wrapRect = previewWrapper.getBoundingClientRect();
-  let x = e.clientX - wrapRect.left - dragOffX;
-  let y = e.clientY - wrapRect.top - dragOffY;
-  // Clamp inside wrapper
-  x = Math.max(0, Math.min(x, wrapRect.width - stampOverlay.offsetWidth));
-  y = Math.max(0, Math.min(y, wrapRect.height - stampOverlay.offsetHeight));
-  stampOverlay.style.left = x + 'px';
-  stampOverlay.style.top = y + 'px';
-});
+function getSelectedStamp() {
+  return document.querySelector('input[name=stamp]:checked').value;
+}
 
-document.addEventListener('mouseup', () => { isDragging = false; });
+function addStampToPage() {
+  const stampKey = getSelectedStamp();
+  const size = parseFloat(document.getElementById('sizeSlider').value);
+  const id = ++stampIdCounter;
 
-// Touch support
-stampOverlay.addEventListener('touchstart', e => {
-  isDragging = true;
-  const touch = e.touches[0];
-  const rect = stampOverlay.getBoundingClientRect();
-  dragOffX = touch.clientX - rect.left;
-  dragOffY = touch.clientY - rect.top;
-  e.preventDefault();
-}, { passive: false });
+  // Default position: center of canvas
+  const cw = pdfCanvas.clientWidth || pdfCanvas.width;
+  const ch = pdfCanvas.clientHeight || pdfCanvas.height;
+  const stampPxW = cw * (size / 100);
 
-document.addEventListener('touchmove', e => {
-  if (!isDragging) return;
-  const touch = e.touches[0];
-  const wrapRect = previewWrapper.getBoundingClientRect();
-  let x = touch.clientX - wrapRect.left - dragOffX;
-  let y = touch.clientY - wrapRect.top - dragOffY;
-  x = Math.max(0, Math.min(x, wrapRect.width - stampOverlay.offsetWidth));
-  y = Math.max(0, Math.min(y, wrapRect.height - stampOverlay.offsetHeight));
-  stampOverlay.style.left = x + 'px';
-  stampOverlay.style.top = y + 'px';
-  e.preventDefault();
-}, { passive: false });
+  // Create DOM element
+  const el = createStampEl(id, stampKey, stampPxW);
+  previewWrapper.appendChild(el);
 
-document.addEventListener('touchend', () => { isDragging = false; });
+  // Default position: center
+  const initX = (cw - stampPxW) / 2;
+  const initY = ch * 0.7;
+  el.style.left = initX + 'px';
+  el.style.top = initY + 'px';
 
-async function applyStamp() {
+  stampsList.push({ id, page: currentPage, stamp: stampKey, el, size });
+  renderStampList();
+}
+
+function createStampEl(id, stampKey, stampPxW) {
+  const el = document.createElement('div');
+  el.className = 'stamp-el';
+  el.dataset.id = id;
+  el.style.width = stampPxW + 'px';
+  el.style.height = 'auto';
+  el.style.display = 'none'; // shown only on matching page
+
+  const img = document.createElement('img');
+  img.src = `/stamp_image/${stampKey}?t=${Date.now()}`;
+  el.appendChild(img);
+
+  const rm = document.createElement('button');
+  rm.className = 'remove-stamp';
+  rm.innerHTML = '✕';
+  rm.onclick = (e) => { e.stopPropagation(); removeStamp(id); };
+  el.appendChild(rm);
+
+  makeDraggable(el);
+  return el;
+}
+
+function removeStamp(id) {
+  const idx = stampsList.findIndex(s => s.id === id);
+  if (idx === -1) return;
+  stampsList[idx].el.remove();
+  stampsList.splice(idx, 1);
+  renderStampList();
+}
+
+function refreshStampsOnCanvas() {
+  stampsList.forEach(s => {
+    s.el.style.display = s.page === currentPage ? 'block' : 'none';
+  });
+}
+
+function renderStampList() {
+  if (stampsList.length === 0) {
+    stampListEl.innerHTML = '<div class="empty-list">Нет печатей</div>';
+    return;
+  }
+  stampListEl.innerHTML = '';
+  stampsList.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'stamp-item';
+    const isDeleted = deletedPages.has(s.page);
+    div.innerHTML = `
+      <span class="pg">стр ${s.page}</span>
+      <span style="flex:1;${isDeleted ? 'text-decoration:line-through;color:#aaa' : ''}">${STAMP_LABELS[s.stamp] || s.stamp}</span>
+      <span class="del-s" onclick="removeStamp(${s.id})">✕</span>
+    `;
+    div.onclick = (e) => {
+      if (e.target.classList.contains('del-s')) return;
+      goToPage(s.page);
+    };
+    stampListEl.appendChild(div);
+  });
+}
+
+async function goToPage(num) {
+  if (num === currentPage) return;
+  currentPage = num;
+  updatePageUI();
+  await renderPage(currentPage);
+}
+
+const STAMP_LABELS = {
+  {% for key, stamp in stamps.items() %}
+  '{{ key }}': '{{ stamp.label }}',
+  {% endfor %}
+};
+
+// Drag
+function makeDraggable(el) {
+  let dragging = false, ox = 0, oy = 0;
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('remove-stamp')) return;
+    dragging = true;
+    const rect = el.getBoundingClientRect();
+    ox = e.clientX - rect.left;
+    oy = e.clientY - rect.top;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const wRect = previewWrapper.getBoundingClientRect();
+    let x = e.clientX - wRect.left - ox;
+    let y = e.clientY - wRect.top - oy;
+    x = Math.max(0, Math.min(x, wRect.width - el.offsetWidth));
+    y = Math.max(0, Math.min(y, wRect.height - el.offsetHeight));
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+  });
+
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  // Touch
+  el.addEventListener('touchstart', e => {
+    if (e.target.classList.contains('remove-stamp')) return;
+    dragging = true;
+    const touch = e.touches[0];
+    const rect = el.getBoundingClientRect();
+    ox = touch.clientX - rect.left;
+    oy = touch.clientY - rect.top;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const touch = e.touches[0];
+    const wRect = previewWrapper.getBoundingClientRect();
+    let x = touch.clientX - wRect.left - ox;
+    let y = touch.clientY - wRect.top - oy;
+    x = Math.max(0, Math.min(x, wRect.width - el.offsetWidth));
+    y = Math.max(0, Math.min(y, wRect.height - el.offsetHeight));
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('touchend', () => { dragging = false; });
+}
+
+// Apply
+async function applyAll() {
   if (!jobId) return;
-  const stampKey = document.querySelector('input[name=stamp]:checked').value;
-  const sizePct = parseFloat(document.getElementById('sizeSlider').value);
 
-  // Get stamp position relative to canvas (top-left origin)
-  const wrapRect = previewWrapper.getBoundingClientRect();
+  // Collect stamp positions
   const canvasRect = pdfCanvas.getBoundingClientRect();
-  const stampRect = stampOverlay.getBoundingClientRect();
+  const cw = canvasRect.width;
+  const ch = canvasRect.height;
 
-  const canvasW = canvasRect.width;
-  const canvasH = canvasRect.height;
-
-  // Position of stamp top-left corner relative to canvas
-  const stampX = stampRect.left - canvasRect.left;
-  const stampY = stampRect.top - canvasRect.top;
-
-  const xPct = (stampX / canvasW) * 100;
-  const yPct = (stampY / canvasH) * 100;
+  const stampsData = stampsList.map(s => {
+    const el = s.el;
+    const stampRect = el.getBoundingClientRect();
+    const x = ((stampRect.left - canvasRect.left) / cw) * 100;
+    const y = ((stampRect.top - canvasRect.top) / ch) * 100;
+    return { page: s.page, stamp: s.stamp, x, y, size: s.size };
+  });
 
   showStatus('loading', 'Генерирую PDF...');
   applyBtn.disabled = true;
@@ -444,18 +551,21 @@ async function applyStamp() {
     const resp = await fetch('/process', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ job_id: jobId, stamp: stampKey, x: xPct, y: yPct, size: sizePct, filename: currentFilename })
+      body: JSON.stringify({
+        job_id: jobId,
+        stamps: stampsData,
+        deleted_pages: Array.from(deletedPages),
+        filename: currentFilename
+      })
     });
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error);
 
-    // Trigger download
     const a = document.createElement('a');
     a.href = data.download_url;
     a.download = currentFilename + '_с_печатью.pdf';
     a.click();
-
-    showStatus('success', '✅ Готово! Файл скачивается.');
+    showStatus('success', '✅ PDF скачивается!');
   } catch(e) {
     showStatus('error', '❌ ' + e.message);
   } finally {
@@ -464,18 +574,21 @@ async function applyStamp() {
 }
 
 function resetAll() {
-  jobId = null;
-  currentFilename = '';
-  pdfDoc = null;
+  jobId = null; currentFilename = ''; pdfDoc = null;
+  currentPage = 1; totalPages = 0;
+  deletedPages = new Set();
+  stampsList.forEach(s => s.el.remove());
+  stampsList = [];
   fileInput.value = '';
   fileName.style.display = 'none';
-  fileName.textContent = '';
   placeholder.style.display = 'block';
   previewWrapper.style.display = 'none';
-  stampOverlay.style.display = 'none';
+  pageBar.style.display = 'none';
   applyBtn.disabled = true;
+  addStampBtn.disabled = true;
   resetBtn.style.display = 'none';
   showStatus('', '');
+  renderStampList();
 }
 
 function showStatus(type, msg) {
@@ -485,10 +598,11 @@ function showStatus(type, msg) {
   statusEl.classList.add(type);
   if (type === 'loading') {
     statusEl.innerHTML = `<div class="spinner"></div><span>${msg}</span>`;
+    statusEl.style.display = 'flex';
   } else {
     statusEl.textContent = msg;
+    statusEl.style.display = type === 'success' ? 'flex' : 'block';
   }
-  statusEl.style.display = type === 'loading' || type === 'success' ? 'flex' : 'block';
 }
 </script>
 </body>
