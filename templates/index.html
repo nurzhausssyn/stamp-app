@@ -185,7 +185,7 @@ h1 { font-size: 17px; color: #1a1a2e; font-weight: 700; }
   <div>
     <div class="lbl">3. Размер</div>
     <div class="slider-row">
-      <input type="range" id="sizeSlider" min="8" max="40" value="20" oninput="document.getElementById('sizeVal').textContent=this.value+'%'">
+      <input type="range" id="sizeSlider" min="8" max="40" value="20" oninput="onSizeChange(this.value)">
       <span class="sval" id="sizeVal">20%</span>
     </div>
   </div>
@@ -378,17 +378,27 @@ function getSelectedStamp() {
   return document.querySelector('input[name=stamp]:checked').value;
 }
 
+function onSizeChange(val) {
+  document.getElementById('sizeVal').textContent = val + '%';
+  const size = parseFloat(val);
+  const cw = pdfCanvas.clientWidth || pdfCanvas.width;
+  // Resize all stamps on the current page
+  stampsList.filter(s => s.page === currentPage).forEach(s => {
+    const newW = cw * (size / 100);
+    s.el.style.width = newW + 'px';
+    s.size = size;
+  });
+}
+
 function addStampToPage() {
   const stampKey = getSelectedStamp();
   const size = parseFloat(document.getElementById('sizeSlider').value);
   const id = ++stampIdCounter;
 
-  // Default position: center of canvas
   const cw = pdfCanvas.clientWidth || pdfCanvas.width;
   const ch = pdfCanvas.clientHeight || pdfCanvas.height;
   const stampPxW = cw * (size / 100);
 
-  // Create DOM element
   const el = createStampEl(id, stampKey, stampPxW);
   previewWrapper.appendChild(el);
 
@@ -399,6 +409,9 @@ function addStampToPage() {
   el.style.top = initY + 'px';
 
   stampsList.push({ id, page: currentPage, stamp: stampKey, el, size });
+
+  // Show immediately on current page
+  refreshStampsOnCanvas();
   renderStampList();
 }
 
@@ -408,7 +421,7 @@ function createStampEl(id, stampKey, stampPxW) {
   el.dataset.id = id;
   el.style.width = stampPxW + 'px';
   el.style.height = 'auto';
-  el.style.display = 'none'; // shown only on matching page
+  el.style.display = 'block'; // visibility managed by refreshStampsOnCanvas
 
   const img = document.createElement('img');
   img.src = `/stamp_image/${stampKey}?t=${Date.now()}`;
