@@ -21,7 +21,7 @@ STAMPS = {
     'kazybai': {'file': 'Печать Казыбай А.Н..png', 'label': 'ИП Казыбай А.Н.'},
     'alfa': {'file': 'Печать Alfa and Omega.png', 'label': 'Alfa and Omega'},
     'tempstroy': {'file': 'Печать Temp Stroy.png', 'label': 'ИП Керимбеков Temp Stroy'},
-    'orley': {'file': 'орлеу.png', 'label': 'ТОО Орлеу'},
+    'orley': {'file': 'Орлеу.png', 'label': 'ТОО Орлеу'},
 }
 
 
